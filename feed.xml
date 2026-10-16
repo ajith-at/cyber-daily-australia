@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<channel>
+  <title>Cyber Daily Australia</title>
+  <link>https://ajith-at.github.io/cyber-daily-australia</link>
+  <language>en-au</language>
+  <description>Daily open-source cybersecurity situation report with an Australian focus.</description>
+  <itunes:author>Cyber Daily Australia</itunes:author>
+  <itunes:owner><itunes:name>Cyber Daily Australia</itunes:name><itunes:email>troy4claude@gmail.com</itunes:email></itunes:owner>
+  <itunes:image href="https://ajith-at.github.io/cyber-daily-australia/cover.jpg"/>
+  <itunes:category text="Technology"/>
+  <itunes:type>episodic</itunes:type>
+  <itunes:explicit>false</itunes:explicit>
+  <item>
+    <title>Episode 1: BeyondTrust zero-day and edge-device exploitation — 16 October 2026</title>
+    <description>Good morning, and welcome to Cyber Daily Australia, your daily cybersecurity situation report. This episode covers the twenty-four hours to eight thirty on the evening of Friday the sixteenth of October, twenty twenty-six, Melbourne time. Everything in this briefing comes from open, unclassified sources, and for each item we&#x27;ll tell you how confident we are in the reporting.  Here&#x27;s how today&#x27;s ep…</description>
+    <pubDate>Fri, 16 Oct 2026 20:47:05 +1100</pubDate>
+    <guid isPermaLink="false">cyber-daily-australia-2026-10-16-2043</guid>
+    <enclosure url="https://ajith-at.github.io/cyber-daily-australia/episodes/2026-10-16-2043.mp3" length="9743299" type="audio/mpeg"/>
+    <itunes:duration>00:13:31</itunes:duration>
+    <itunes:episodeType>full</itunes:episodeType>
+    <itunes:explicit>false</itunes:explicit>
+  </item>
+</channel>
+</rss>
