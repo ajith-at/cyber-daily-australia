@@ -7,6 +7,7 @@
 - Artwork: the owner-supplied U51 graphics in `/workspace/podcast/brand_src/` (u51_cover_src.png, u51_banner_src.png) are the brand. Do not generate or redraw brand art. `python3 x/make_brand_assets.py` builds everything from them: site/cover-u51-v2.jpg and site/cover.jpg (3000x3000 podcast cover), x_banner.png (1500x500), x_avatar.png (400x400), and the web copies in site/img (600px logo, banner strip, 1200px og image, favicons). If the art changes, bump `COVER` in brand.py to a new filename so podcast apps refresh. x/make_cover.py and x/make_banner.py are retired (they exit unless forced); publish.sh does not call any image script.
 - Note: the artwork reads "U51 Cyber and AI Podcast" while the feed title is "U51 Cyber and AI Security Pod". Keep the feed title as is unless told otherwise.
 - Website: build_site.py adds the banner strip and logo to index.html, a small logo header to every notes page, plus favicon and og:image tags. Do not hand-edit these.
+- Listen buttons: APPLE_URL, POCKETCASTS_URL and SPOTIFY_URL in brand.py drive the button row on index.html and the compact row in each notes-page header. A platform set to None is hidden. Spotify is not confirmed yet: when the owner supplies the open.spotify.com/show/<id> link, set SPOTIFY_URL, run `python3 build_site.py` and push. Never guess an ID.
 - Never mention the owner's name in any script, notes, feed, site or post. Owner email in the feed stays troy4claude@gmail.com.
 - Do not mention the old name again after Episode 5 (see the one-off note below).
 
