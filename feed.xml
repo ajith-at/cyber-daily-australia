@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" >
 <channel>
-  <title>Cyber Daily Australia</title>
+  <title>U51 Cyber and AI Security Pod</title>
   <link>https://ajith-at.github.io/cyber-daily-australia</link>
   <language>en-au</language>
-  <description>Daily open-source cybersecurity situation report with an Australian focus. Follow on X: @CyberDailyAus (https://x.com/CyberDailyAus)</description>
-  <itunes:author>Cyber Daily Australia</itunes:author>
-  <itunes:owner><itunes:name>Cyber Daily Australia</itunes:name><itunes:email>troy4claude@gmail.com</itunes:email></itunes:owner>
-  <itunes:image href="https://ajith-at.github.io/cyber-daily-australia/cover.jpg"/>
+  <description>U51 Cyber and AI Security Pod: the daily cyber and AI threat brief, from Melbourne. A short daily executive briefing on the cyber threats, vulnerabilities and AI security developments that matter, with an Australian lens. Open sources only. Formerly Cyber Daily Australia. Follow on X: @u51cyber (https://x.com/u51cyber)</description>
+  <itunes:subtitle>The daily cyber and AI threat brief, from Melbourne</itunes:subtitle>
+  <itunes:summary>U51 Cyber and AI Security Pod: the daily cyber and AI threat brief, from Melbourne. A short daily executive briefing on the cyber threats, vulnerabilities and AI security developments that matter, with an Australian lens. Open sources only. Formerly Cyber Daily Australia. Follow on X: @u51cyber (https://x.com/u51cyber)</itunes:summary>
+  <itunes:keywords>cybersecurity, cyber security, AI security, threat intelligence, ransomware, vulnerabilities, infosec, Australia, Melbourne, daily brief</itunes:keywords>
+  <itunes:author>U51 Cyber and AI Security Pod</itunes:author>
+  <itunes:owner><itunes:name>U51 Cyber and AI Security Pod</itunes:name><itunes:email>troy4claude@gmail.com</itunes:email></itunes:owner>
+  <itunes:image href="https://ajith-at.github.io/cyber-daily-australia/cover-u51.jpg"/>
+  <image><url>https://ajith-at.github.io/cyber-daily-australia/cover-u51.jpg</url><title>U51 Cyber and AI Security Pod</title><link>https://ajith-at.github.io/cyber-daily-australia</link></image>
   <itunes:category text="Technology"/>
   <itunes:type>episodic</itunes:type>
   <itunes:explicit>false</itunes:explicit>
@@ -63,7 +67,7 @@
 <li>Attacker address (Huntress): 144.172.64[.]128. Additional addresses are listed in the ConnectWise advisory.</li>
 <li>Disabled ConnectWise app IDs: Cloud Backup 506e08f9-6e9a-4da4-942b-a099a03644ae; Cloud Management 2399d300-6fca-4e6a-a686-399fefe75b83; MS Teams 24205314-2b89-4e07-a2a4-579e898a5640; Exchange Online b78f6a77-d4e5-46fb-87e5-d1648bd02519; MS Graph 0de14c77-b9b0-4137-9360-34878a929827; Partner Center 412dcf96-176d-4b3a-a1b0-4981ad66971e; SharePoint Online b2b55f5b-7758-4719-8d8f-88ae172e6bdb.</li>
 </ul>
-<p><a href="https://ajith-at.github.io/cyber-daily-australia/episodes/2026-10-19-0656.html">Show notes page</a> | <a href="https://x.com/CyberDailyAus">Follow on X (@CyberDailyAus)</a></p>]]></content:encoded>
+<p><a href="https://ajith-at.github.io/cyber-daily-australia/episodes/2026-10-19-0656.html">Show notes page</a> | <a href="https://x.com/u51cyber">Follow on X (@u51cyber)</a></p>]]></content:encoded>
     <pubDate>Mon, 19 Oct 2026 06:59:20 +1100</pubDate>
     <guid isPermaLink="false">cyber-daily-australia-2026-10-19-0656</guid>
     <enclosure url="https://ajith-at.github.io/cyber-daily-australia/episodes/2026-10-19-0656.mp3" length="8568102" type="audio/mpeg"/>
@@ -112,7 +116,7 @@
 </ul>
 <h3>Patch priorities and indicators</h3>
 <p><b>Critical:</b> disable ConnectWise and SkyKick enterprise apps in Microsoft 365 and review app credentials added since 13 October; Atlassian Data Center; self-hosted BeyondTrust RS and PRA; Fortinet FortiOS and related products; Drupal core and Entity List. <b>High (72 hours):</b> Adobe Commerce and Magento (BlockStrap), Claude Agent SDK for Python 0.2.121, Windows developer machines that installed imgdecode. <b>Hunt for:</b> service principal sign-ins from 144.172.64[.]128 (AS14956); app IDs 506e08f9-6e9a-4da4-942b-a099a03644ae (Cloud Backup) and 24205314-2b89-4e07-a2a4-579e898a5640 (Cloud Management MS Teams); ConnectWise or SkyKick apps adding themselves to directory roles; user agents Python-urllib/3.12 and curl/7.88.1 alongside that IP. MALFEX: C2 104.234.65[.]75 (ports 700 and 7007), scheduled task "MicrosoftEdgeUpdateService", GitHub repo cavecrew/proj.</p>
-<p><a href="https://ajith-at.github.io/cyber-daily-australia/episodes/2026-10-18-0701.html">Show notes page</a> | <a href="https://x.com/CyberDailyAus">Follow on X (@CyberDailyAus)</a></p>]]></content:encoded>
+<p><a href="https://ajith-at.github.io/cyber-daily-australia/episodes/2026-10-18-0701.html">Show notes page</a> | <a href="https://x.com/u51cyber">Follow on X (@u51cyber)</a></p>]]></content:encoded>
     <pubDate>Sun, 18 Oct 2026 07:04:36 +1100</pubDate>
     <guid isPermaLink="false">cyber-daily-australia-2026-10-18-0701</guid>
     <enclosure url="https://ajith-at.github.io/cyber-daily-australia/episodes/2026-10-18-0701.mp3" length="9395035" type="audio/mpeg"/>
@@ -167,7 +171,7 @@
 </ul>
 <h3>Patch priorities and indicators</h3>
 <p><b>Critical:</b> BeyondTrust RS and PRA (self-hosted), AhsayCBS (v10.3.4.45 or v9.15.2.70), Atlassian Data Center, Fortinet FortiOS, FortiProxy, FortiPAM and FortiSwitchManager. <b>High (72 hours):</b> Next.js, Langflow, Shopify stores using Selleasy or Hulk Product Options, Windows hosts that ran AOMEI Backupper from May to July 2026. <b>Hunt for:</b> FortiOS system.auto-script objects with traversal strings in their names; Atlassian requests containing "::" and unexpected admin accounts created via Crowd; GitHub workflows named security-audit.yml or github_actions_security.yml.</p>
-<p><a href="https://ajith-at.github.io/cyber-daily-australia/episodes/2026-10-17-0653.html">Show notes page</a> | <a href="https://x.com/CyberDailyAus">Follow on X (@CyberDailyAus)</a></p>]]></content:encoded>
+<p><a href="https://ajith-at.github.io/cyber-daily-australia/episodes/2026-10-17-0653.html">Show notes page</a> | <a href="https://x.com/u51cyber">Follow on X (@u51cyber)</a></p>]]></content:encoded>
     <pubDate>Sat, 17 Oct 2026 06:58:31 +1100</pubDate>
     <guid isPermaLink="false">cyber-daily-australia-2026-10-17-0653</guid>
     <enclosure url="https://ajith-at.github.io/cyber-daily-australia/episodes/2026-10-17-0653.mp3" length="10224788" type="audio/mpeg"/>

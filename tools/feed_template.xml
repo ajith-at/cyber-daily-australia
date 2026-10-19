@@ -4,10 +4,14 @@
   <title>{{SHOW_TITLE}}</title>
   <link>{{SITE_URL}}</link>
   <language>en-au</language>
-  <description>Daily open-source cybersecurity situation report with an Australian focus.</description>
-  <itunes:author>Cyber Daily Australia</itunes:author>
-  <itunes:owner><itunes:name>Cyber Daily Australia</itunes:name><itunes:email>troy4claude@gmail.com</itunes:email></itunes:owner>
-  <itunes:image href="{{SITE_URL}}/cover.jpg"/>
+  <description>{{DESCRIPTION}}</description>
+  <itunes:subtitle>{{SUBTITLE}}</itunes:subtitle>
+  <itunes:summary>{{DESCRIPTION}}</itunes:summary>
+  <itunes:keywords>{{KEYWORDS}}</itunes:keywords>
+  <itunes:author>{{SHOW_TITLE}}</itunes:author>
+  <itunes:owner><itunes:name>{{SHOW_TITLE}}</itunes:name><itunes:email>{{OWNER_EMAIL}}</itunes:email></itunes:owner>
+  <itunes:image href="{{SITE_URL}}/{{COVER}}"/>
+  <image><url>{{SITE_URL}}/{{COVER}}</url><title>{{SHOW_TITLE}}</title><link>{{SITE_URL}}</link></image>
   <itunes:category text="Technology"/>
   <itunes:type>episodic</itunes:type>
   <itunes:explicit>false</itunes:explicit>
