@@ -2,9 +2,11 @@
 
 ## Name and brand (rebranded 19 Oct 2026; formerly Cyber Daily Australia)
 - Full name: "U51 Cyber and AI Security Pod". Short form in scripts and posts: "U51" (say it as "U fifty-one"; write "U51"). X: @u51cyber, https://x.com/u51cyber.
-- Branding values (name, handle, subtitle, cover filename, keywords) live in `/workspace/podcast/brand.py`; publish.sh, build_site.py, x/make_post.py, x/make_banner.py and x/make_cover.py read from it.
+- Branding values (name, handle, subtitle, cover filename, keywords) live in `/workspace/podcast/brand.py`; publish.sh, build_site.py, x/make_post.py, and x/make_brand_assets.py read from it.
 - The feed URL stays https://ajith-at.github.io/cyber-daily-australia/feed.xml (Spotify is subscribed). Do not rename the repo, change BASE or the item guid prefix `cyber-daily-australia-`.
-- Cover art: site/cover-u51.jpg (3000x3000, also copied to site/cover.jpg); regenerate with `python3 x/make_cover.py`. If the art changes, bump `COVER` in brand.py to a new filename so podcast apps refresh.
+- Artwork: the owner-supplied U51 graphics in `/workspace/podcast/brand_src/` (u51_cover_src.png, u51_banner_src.png) are the brand. Do not generate or redraw brand art. `python3 x/make_brand_assets.py` builds everything from them: site/cover-u51-v2.jpg and site/cover.jpg (3000x3000 podcast cover), x_banner.png (1500x500), x_avatar.png (400x400), and the web copies in site/img (600px logo, banner strip, 1200px og image, favicons). If the art changes, bump `COVER` in brand.py to a new filename so podcast apps refresh. x/make_cover.py and x/make_banner.py are retired (they exit unless forced); publish.sh does not call any image script.
+- Note: the artwork reads "U51 Cyber and AI Podcast" while the feed title is "U51 Cyber and AI Security Pod". Keep the feed title as is unless told otherwise.
+- Website: build_site.py adds the banner strip and logo to index.html, a small logo header to every notes page, plus favicon and og:image tags. Do not hand-edit these.
 - Never mention the owner's name in any script, notes, feed, site or post. Owner email in the feed stays troy4claude@gmail.com.
 - Do not mention the old name again after Episode 5 (see the one-off note below).
 
@@ -43,7 +45,7 @@
   - Default headline is the episode title's topics. For a better post, regenerate with a custom headline: `X_HEADLINE="..." venv/bin/python x/make_post.py <stem>` or pass it as the 2nd argument. Lead with the 2 to 4 biggest stories, specific and punchy; a light touch of character is fine, but never at victims' expense.
   - Format: 🎧 U51 Episode N (D Month): headline. / Show notes and audio: <notes URL> / 1 or 2 light hashtags (default `#cybersecurity #AIsecurity`, override with X_TAGS).
   - Limits: 280 characters or fewer, raw and X-weighted (the script trims the headline if needed). No em or en dashes. Never include personal names or details of the show's owner.
-- Banner: `/workspace/podcast/x_banner.png` (1500x500), regenerate with `python3 x/make_banner.py`.
+- Banner: `/workspace/podcast/x_banner.png` (1500x500) and avatar `/workspace/podcast/x_avatar.png` (400x400), rebuilt by `python3 x/make_brand_assets.py` from the supplied artwork.
 
 ## One-off note for Episode 5 (Tuesday 20 Oct 2026) only
 - Episode 5 is the first under the new name. Once, early (right after the intro, or folded into it), mention briefly and naturally, with a light touch of humour, that the show has a new name and was formerly Cyber Daily Australia. Example tone only, do not copy: "Same brief, same voice, new name: until yesterday this was Cyber Daily Australia, and from today it's U51. Nothing else has changed, apart from a name that's quicker to say before your first coffee." Don't refer to any other organisation or explain why the name changed. Keep it to one or two sentences and don't mention who chose the name.

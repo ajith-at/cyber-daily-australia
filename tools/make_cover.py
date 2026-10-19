@@ -1,3 +1,7 @@
+# RETIRED 19 Oct 2026: superseded by x/make_brand_assets.py (owner-supplied artwork).
+import os, sys
+if os.environ.get("FORCE_OLD_GENERATED_ART") != "1":
+    sys.exit("RETIRED: the brand now uses the owner-supplied U51 artwork in /workspace/podcast/brand_src. Run x/make_brand_assets.py instead. (Set FORCE_OLD_GENERATED_ART=1 only to reproduce the old placeholder art.)")
 # Generates the 3000x3000 podcast cover in the navy/cyan style. Writes site/cover.jpg and site/<brand.COVER> (cache-busting name used by the feed).
 import sys; sys.path.insert(0, "/workspace/podcast"); import brand as B
 from PIL import Image, ImageDraw, ImageFont
