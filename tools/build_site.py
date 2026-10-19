@@ -8,7 +8,7 @@ base = os.environ.get("BASE_URL", B.BASE); e = html.escape
 NAV = f"<p><a href='../index.html'>{B.SHOW}</a> | <a href='{B.X_URL}'>Follow on X (@{B.X_HANDLE})</a></p>"
 DESC = (f"{B.SHOW}: {B.SUBTITLE[0].lower() + B.SUBTITLE[1:]}. A short daily executive briefing on the cyber threats, "
         f"vulnerabilities and AI security developments that matter, with an Australian lens. Open sources only. "
-        f"Formerly {B.FORMERLY}. Follow on X: @{B.X_HANDLE} ({B.X_URL})")
+        f"Follow on X: @{B.X_HANDLE} ({B.X_URL})")
 FOOT = f'<a href="{B.X_URL}">Follow on X (@{B.X_HANDLE})</a>'
 # Shared <head> extras (favicon, social preview) and a logo header, injected idempotently between marker comments.
 LOGO = "img/u51-logo-600.jpg"; OG = f"{base}/img/u51-og-1200.jpg"
@@ -84,6 +84,6 @@ open(f"{site}/index.html", "w").write(
     f"<div style='display:flex;align-items:center;gap:20px;margin:1em 0;flex-wrap:wrap'>"
     f"<img src='{LOGO}' alt='{B.SHOW} logo' width=200 height=200 style='border-radius:50%'>"
     f"<div><h1 style='margin:0 0 .3em'>{B.SHOW}</h1><p style='margin:0'>{B.SUBTITLE}. <a href='feed.xml'>RSS feed</a> | <a href='{B.X_URL}'>Follow on X (@{B.X_HANDLE})</a></p>"
-    + listen_row(True) + f"<p style='margin:.4em 0 0'><small>Formerly {B.FORMERLY}.</small></p></div></div>"
+    + listen_row(True) + "</div></div>"
     f"<h2>Episodes</h2><ul>{li}</ul></body>")
 print(f"built feed.xml ({len(eps)} episodes) and index.html")
