@@ -9,7 +9,7 @@
 - Do not mention the old name again after Episode 5 (see the one-off note below).
 
 ## Script
-- Length: 1,500–2,200 words (10–15 min), scaled to how significant the day's news is.
+- Length: 1,500 to 2,200 words (10 to 15 min), scaled to how significant the day's news is.
 - Intro: one or two sentences only: a Melbourne greeting, the show name "U51", the date, and the reporting window (Melbourne time). Then go straight into the first story. No show preamble or running order.
   - Model: "Hello from Melbourne, Australia, this is U51, your cyber and AI security brief for Tuesday the 20th of October, covering the 24 hours to 7 am." Vary the wording every day, for example: "Good morning from Melbourne. You're listening to U51, the cyber and AI security brief for ...", "From Melbourne, this is U51 with your cyber and AI threat brief for ...", "Hello from a [weather] Melbourne, it's U51, your security brief for ...". Never reuse the previous episode's exact opening.
 - Australian English, spoken style, neutral executive tone. Expand acronyms on first use; say CVE numbers sparingly and spell them out.
@@ -25,7 +25,7 @@
 
 ## Titles and descriptions (Spotify)
 - Episode titles: never use an em dash or en dash. Format: "Episode N: <headline topics>, <D Month YYYY>" (e.g. "Episode 2: Ivanti patch deadline and AI key theft, 17 October 2026").
-- The show-notes file drives the Spotify description. Open it with a 2–3 sentence plain summary of the day's top stories (no greeting, no "welcome", no methodology), then the story list with links. No em dashes anywhere in the notes.
+- The show-notes file drives the Spotify description. Open it with a 2 or 3 sentence plain summary of the day's top stories (no greeting, no "welcome", no methodology), then the story list with links. No em dashes anywhere in the notes.
 
 ## Character
 - A little dry, understated humour and personality is welcome, e.g. a wry aside about a vendor's patch cadence or a well-placed observation. At most two or three light touches per episode, never at victims' expense, never undermining seriousness on critical items.
