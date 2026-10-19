@@ -9,7 +9,7 @@
 - Website: build_site.py adds the banner strip and logo to index.html, a small logo header to every notes page, plus favicon and og:image tags. Do not hand-edit these.
 - Listen buttons: APPLE_URL, POCKETCASTS_URL and SPOTIFY_URL in brand.py drive the button row on index.html and the compact row in each notes-page header. A platform set to None is hidden. Spotify is not confirmed yet: when the owner supplies the open.spotify.com/show/<id> link, set SPOTIFY_URL, run `python3 build_site.py` and push. Never guess an ID.
 - Never mention the owner's name in any script, notes, feed, site or post. Owner email in the feed stays troy4claude@gmail.com.
-- Do not mention the old name again after Episode 5 (see the one-off note below).
+- Never mention the old name or the rename in scripts, notes, posts or anywhere public (Episode 5, 20 Oct 2026, was the first under the new name).
 
 ## Script
 - Length: 1,500 to 2,200 words (10 to 15 min), scaled to how significant the day's news is.
@@ -34,6 +34,12 @@
 - A little dry, understated humour and personality is welcome, e.g. a wry aside about a vendor's patch cadence or a well-placed observation. At most two or three light touches per episode, never at victims' expense, never undermining seriousness on critical items.
 - Never repeat the same joke, phrase, sign-off or aside across episodes; vary openings, transitions and closings daily.
 
+## Notion show-notes archive (do this after every publish)
+The box has no Notion credentials, so the daily routine must do this step through the user-Notion MCP connector:
+1. Run `/workspace/podcast/notion/prep_notion_page.sh <episode-stem>` (e.g. 2026-10-18-0647). It prints the episode title and writes `/workspace/podcast/notion/<stem>.md` (episode date, MP3 URL, notes-page URL, full show notes with links).
+2. Call `notion-create-pages` with parent `{"page_id": "3fb48c8e1a2f81449abfdc1ac14526ce"}` (parent page "U51 Cyber and AI Security Pod: Show Notes", https://app.notion.com/p/3fb48c8e1a2f81449abfdc1ac14526ce, in the Agentspace teamspace), title = printed title (no em dashes), content = `$file:/workspace/podcast/notion/<stem>.md`.
+3. Don't create duplicates: search the parent's children for the title first. Notion pages are kept even after the 90-day MP3 cleanup.
+
 ## Weekly and continuity rules (added 18 Oct 2026)
 - Monday episodes: after the intro, give a brief recap of significant weekend activity and the stories covered in the Saturday and Sunday editions (read previous scripts/notes in /workspace/podcast/site/episodes and ep*.txt), for listeners who skip weekends.
 - Localisation: occasionally (not daily) open with a light local touch, such as Melbourne weather, events, public holidays or something significant in Australia, or worldwide if it's very important. Keep it natural, varied and never formulaic; verify any facts (e.g. a weather forecast) from live sources.
@@ -48,7 +54,10 @@
   - Limits: 280 characters or fewer, raw and X-weighted (the script trims the headline if needed). No em or en dashes. Never include personal names or details of the show's owner.
 - Banner: `/workspace/podcast/x_banner.png` (1500x500) and avatar `/workspace/podcast/x_avatar.png` (400x400), rebuilt by `python3 x/make_brand_assets.py` from the supplied artwork.
 
-## One-off note for Episode 5 (Tuesday 20 Oct 2026) only
-- Episode 5 is the first under the new name. Once, early (right after the intro, or folded into it), mention briefly and naturally, with a light touch of humour, that the show has a new name and was formerly Cyber Daily Australia. Example tone only, do not copy: "Same brief, same voice, new name: until yesterday this was Cyber Daily Australia, and from today it's U51. Nothing else has changed, apart from a name that's quicker to say before your first coffee." Don't refer to any other organisation or explain why the name changed. Keep it to one or two sentences and don't mention who chose the name.
-- Mention the new X handle @u51cyber in that same aside if it fits ("you'll find us on X at u51cyber").
-- After Episode 5, never mention the rename or the old name in scripts again. Delete this section once Episode 5 is published.
+
+## Sunday Special (from 25 Oct 2026)
+- Every Sunday episode is a "Sunday Special": a deep dive into one relevant topic instead of the usual news run. No news segment by default. Only if there is a burning high-severity or extraordinary high-profile incident in the past 24 hours, open with a brief (under 2 minutes) verified mention of it, then the deep dive. Target 20 to 25 minutes in total.
+- Title format: "Sunday Special: <topic>, D Month YYYY" (still counts as the next episode number in the feed: "Episode N, Sunday Special: <topic>, D Month YYYY").
+- Planning cycle: Thursday evening, five candidate topics go to the owner for selection; Saturday, a draft text outline goes to him for review; Sunday morning, the episode is produced from the approved outline (with his feedback applied). Files live in /workspace/podcast/specials/<Sunday date YYYY-MM-DD>/ (topic.md, outline.md).
+- Deep dives explain frameworks and standards accurately from primary sources (standard bodies, NIST, regulators). Never quote or paraphrase clauses of a paywalled standard you haven't read; rely on the publisher's public summaries and say so where relevant.
+- The written daily SITREP still runs on Sundays as normal. Monday's weekend recap covers Saturday's episode, the Sunday Special, and any significant news from Sunday that the Special didn't cover.
