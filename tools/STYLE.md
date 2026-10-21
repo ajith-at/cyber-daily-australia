@@ -1,6 +1,6 @@
 # U51 Cyber and AI Security Pod: podcast style rules
 
-## Name and brand (rebranded 19 Oct 2026; formerly Cyber Daily Australia)
+## Name and brand (rebranded 19 Oct 2026)
 - Full name: "U51 Cyber and AI Security Pod". Short form in scripts and posts: "U51" (say it as "U fifty-one"; write "U51"). X: @u51cyber, https://x.com/u51cyber.
 - Branding values (name, handle, subtitle, cover filename, keywords) live in `/workspace/podcast/brand.py`; publish.sh, build_site.py, x/make_post.py, and x/make_brand_assets.py read from it.
 - Site and feed: https://u51.org/ and https://u51.org/feed.xml (custom domain on GitHub Pages since 19 Oct 2026, HTTPS enforced). Spotify is still subscribed to the old https://ajith-at.github.io/cyber-daily-australia/feed.xml, which 301-redirects to u51.org, so never rename the repo, never delete `site/CNAME` (it holds `u51.org`), and never change the item guid prefix `cyber-daily-australia-`. BASE lives in brand.py (`https://u51.org`). Use u51.org links in notes, posts and Notion.
@@ -9,7 +9,7 @@
 - Website: build_site.py adds the banner strip and logo to index.html, a small logo header to every notes page, plus favicon and og:image tags. Do not hand-edit these.
 - Listen buttons: APPLE_URL, POCKETCASTS_URL and SPOTIFY_URL in brand.py drive the button row on index.html and the compact row in each notes-page header. A platform set to None is hidden. Spotify is not confirmed yet: when the owner supplies the open.spotify.com/show/<id> link, set SPOTIFY_URL, run `python3 build_site.py` and push. Never guess an ID.
 - Never mention the owner's name in any script, notes, feed, site or post. Owner email in the feed stays troy4claude@gmail.com.
-- Never mention the old name or the rename in scripts, notes, posts or anywhere public (Episode 5, 20 Oct 2026, was the first under the new name).
+- Never mention the podcast's pre-rename name or the rename in scripts, notes, posts or anywhere public (internal rule; don't spell the old name out in files either) (Episode 5, 20 Oct 2026, was the first under the new name).
 
 ## Script
 - Length: 1,500 to 2,200 words (10 to 15 min), scaled to how significant the day's news is.
@@ -46,7 +46,7 @@ The box has no Notion credentials, so the daily routine must do this step throug
 - Continuity: rarely, and only when the story warrants it, link to coverage in a previous episode (e.g. "a follow-up on Friday's BeyondTrust story"). Check the earlier scripts first; keep it natural.
 - Australian section: do not say there were no new ASD/ACSC alerts. Mention ASD/ACSC only when there is something relevant. If nothing important is relevant to Australia, omit the Australian segment entirely without remarking on its absence.
 
-## X (Twitter): @u51cyber, https://x.com/u51cyber (added 19 Oct 2026; was @CyberDailyAus until the rebrand)
+## X (Twitter): @u51cyber, https://x.com/u51cyber (added 19 Oct 2026, replacing the pre-rename handle)
 - The site index, every notes page (top nav "Follow on X (@u51cyber)"), each feed item's show-notes footer and the feed channel description link to the X profile. publish.sh (via build_site.py) adds these automatically.
 - Daily X post: publish.sh runs `x/make_post.py <stem>` after each build and writes `/workspace/podcast/x/<stem>.txt` (ready to paste; nothing is posted automatically, as the box has no X access).
   - Default headline is the episode title's topics. For a better post, regenerate with a custom headline: `X_HEADLINE="..." venv/bin/python x/make_post.py <stem>` or pass it as the 2nd argument. Lead with the 2 to 4 biggest stories, specific and punchy; a light touch of character is fine, but never at victims' expense.

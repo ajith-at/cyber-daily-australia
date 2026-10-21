@@ -7,7 +7,6 @@ X_URL = "https://x.com/u51cyber"
 BASE = "https://u51.org"   # custom domain since 19 Oct 2026. The old feed https://ajith-at.github.io/cyber-daily-australia/feed.xml 301-redirects here (Spotify is subscribed to it): never rename the repo or remove the CNAME file
 COVER = "cover-u51-v3.jpg"   # owner-supplied artwork (brand_src). Bump the filename whenever the art changes so podcast apps refresh
 OWNER_EMAIL = "troy4claude@gmail.com"
-FORMERLY = "Cyber Daily Australia"
 KEYWORDS = "cybersecurity, cyber security, AI security, threat intelligence, ransomware, vulnerabilities, infosec, Australia, Melbourne, daily brief"
 # Listen links (verified 19 Oct 2026). None = not confirmed yet, so the button is hidden. Never guess an ID.
 APPLE_URL = "https://podcasts.apple.com/au/podcast/u51-cyber-and-ai-security-pod/id6823895836"   # iTunes Search API, feedUrl matched

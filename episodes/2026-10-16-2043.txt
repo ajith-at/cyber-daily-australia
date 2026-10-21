@@ -1,4 +1,4 @@
-Good morning, and welcome to Cyber Daily Australia, your daily cybersecurity situation report. This episode covers the twenty-four hours to eight thirty on the evening of Friday the sixteenth of October, twenty twenty-six, Melbourne time. Everything in this briefing comes from open, unclassified sources, and for each item we'll tell you how confident we are in the reporting.
+Good morning, and welcome to U51 Cyber and AI Security Pod, your daily cybersecurity situation report. This episode covers the twenty-four hours to eight thirty on the evening of Friday the sixteenth of October, twenty twenty-six, Melbourne time. Everything in this briefing comes from open, unclassified sources, and for each item we'll tell you how confident we are in the reporting.
 
 Here's how today's episode runs. We'll start with the headlines. Then we'll turn to the Australian focus, followed by global threat activity and exploits, artificial intelligence security, and major industry developments. We'll finish with the outlook and a clear list of patching priorities.
 
@@ -74,4 +74,4 @@ Looking ahead over the next twenty-four to forty-eight hours: it's likely that o
 
 A brief note on sourcing. The CISA catalogue page timed out during collection, so the status of the Ivanti flaw comes from secondary reporting, and several global items rely on a single industry roundup. We've rated those items accordingly.
 
-That's the Cyber Daily Australia briefing for today. Patch the edge, check for compromise, and guard your keys. We'll be back tomorrow morning.
+That's the U51 Cyber and AI Security Pod briefing for today. Patch the edge, check for compromise, and guard your keys. We'll be back tomorrow morning.
