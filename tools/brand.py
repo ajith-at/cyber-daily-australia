@@ -13,3 +13,5 @@ KEYWORDS = "cybersecurity, cyber security, AI security, threat intelligence, ran
 APPLE_URL = "https://podcasts.apple.com/au/podcast/u51-cyber-and-ai-security-pod/id6823895836"   # iTunes Search API, feedUrl matched
 POCKETCASTS_URL = "https://pca.st/itunes/6823895836"   # official Pocket Casts link via the Apple ID; redirects to pocketcasts.com/podcast/u51-cyber-and-ai-security-pod/088d7c70-ad77-013f-7974-0efff22b0435
 SPOTIFY_URL = "https://open.spotify.com/show/4jrA9JCCm3390vCiGokbRw"
+# Homepage hero banner (wide, ~4.2:1; source brand_src/u51_banner_wide_src.png). The old 3:1 u51-banner-1500.jpg is kept but unused.
+BANNER_WIDE = {"src": "img/u51-banner-wide-1024.jpg", "srcset": "img/u51-banner-wide-1024.jpg 1024w, img/u51-banner-wide-2048.jpg 2048w", "w": 2048, "h": 488}

@@ -203,7 +203,8 @@ if older:
         for m, xs in months.items())
     archive = (f"<div class=section-head id=archive><h2>Archive</h2><span class=caption>{len(older)} older episode{'s' if len(older) != 1 else ''}, by month</span></div>"
                f"<section class='card archive' aria-label='Archive'>{groups}</section>")
-hero = (f"<section class='card hero'><img class=hero-banner src='img/u51-banner-1500.jpg' alt='{B.SHORT} banner' width=1500 height=500>"
+BW = getattr(B, "BANNER_WIDE", None) or {"src": "img/u51-banner-1500.jpg", "srcset": "img/u51-banner-1500.jpg 1500w", "w": 1500, "h": 500}
+hero = (f"<section class='card hero'><img class=hero-banner src='{BW['src']}' srcset='{BW['srcset']}' sizes='(max-width: 860px) 100vw, min(1150px, 80vw)' alt='{B.SHORT} banner' width={BW['w']} height={BW['h']}>"
         f"<div class=hero-body><img class=hero-logo src='{LOGO}' alt='{e(B.SHOW)} logo' width=200 height=200>"
         f"<div class=hero-text><h2>{B.SHOW}</h2><p>{B.SUBTITLE}. A short daily executive briefing on the cyber threats, vulnerabilities "
         f"and AI security developments that matter, with an Australian lens. Open sources only.</p>"
