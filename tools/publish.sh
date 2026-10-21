@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# U51 Cyber and AI Security Pod (formerly Cyber Daily Australia)
+# U51 Cyber and AI Security Pod
 # Usage: publish.sh <script.txt> "<episode title>" <shownotes.md|.html>   (NO_PUSH=1 to build locally only)
 set -euo pipefail
 D=/workspace/podcast; SITE=${SITE_DIR:-$D/site}
@@ -33,7 +33,7 @@ touch "$SITE/.nojekyll"
 echo "Built $OUT ($DUR s)"
 "$D/venv/bin/python" "$D/x/make_post.py" "$SLUG" || echo "WARN: X post not generated"
 if [ "${NO_PUSH:-0}" != 1 ]; then
-  cd "$SITE" && git add -A && git commit -qm "Episode $SLUG: $TITLE" && git push -q
+  cd "$SITE" && git add -A && git commit -qm "Episode $SLUG: $TITLE" && git pull --rebase -q && git push -q
   echo "Published $BASE/episodes/$SLUG.mp3"
   P=/workspace/podcast; [ -f "$SITE/episodes/$SLUG.html" ] && "$P/notion/prep_notion_page.sh" "$SLUG" && echo "NOTION: create child page under 3fb48c8e1a2f81449abfdc1ac14526ce with content $P/notion/$SLUG.md (see STYLE.md)" || true
 fi
