@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
-"""Rebuild feed.xml and index.html from site/episodes/*.json, and refresh the nav bar on every notes page.
-Usage: python3 build_site.py [SITE_DIR]. Called by publish.sh; safe to run on its own after branding changes."""
-import sys, json, glob, os, re, html
+"""Rebuild feed.xml, index.html and every episode notes page from site/episodes/*.json, and copy the site stylesheet and scripts.
+Usage: python3 build_site.py [SITE_DIR]. Called by publish.sh; safe to run on its own after branding or style changes.
+Style: 'Soft Indigo Desk' (brief: /workspace/shared/style/soft-indigo-desk.md), matching the Cyber Toolkit at /toolkit/.
+Stylesheet and scripts live in /workspace/podcast/assets_src/ and are copied to site/assets/ (never link to /toolkit/ assets:
+the toolkit deploy replaces that folder). Episode pages are rendered in full from their JSON, so the layout survives every publish.
+No episode is ever trimmed by age or count: the feed lists every episode; the homepage shows the latest 10 as cards and the rest in an Archive."""
+import sys, json, glob, os, re, html, shutil, email.utils, time
 sys.path.insert(0, "/workspace/podcast"); import brand as B
 site = sys.argv[1] if len(sys.argv) > 1 else "/workspace/podcast/site"
 base = os.environ.get("BASE_URL", B.BASE); e = html.escape
-NAV = f"<p><a href='../index.html'>{B.SHOW}</a> | <a href='{B.X_URL}'>Follow on X (@{B.X_HANDLE})</a></p>"
+ASSETS_SRC = os.environ.get("ASSETS_SRC", "/workspace/podcast/assets_src")
+LATEST_N = 10   # full episode cards on the homepage; older episodes go to the Archive (grouped by month)
 DESC = (f"{B.SHOW}: {B.SUBTITLE[0].lower() + B.SUBTITLE[1:]}. A short daily executive briefing on the cyber threats, "
         f"vulnerabilities and AI security developments that matter, with an Australian lens. Open sources only. "
         f"Follow on X: @{B.X_HANDLE} ({B.X_URL})")
 FOOT = f'<a href="{B.X_URL}">Follow on X (@{B.X_HANDLE})</a>'
-# Shared <head> extras (favicon, social preview) and a logo header, injected idempotently between marker comments.
-LOGO = "img/u51-logo-600.jpg"; OG = f"{base}/img/u51-og-1200.jpg"
+LOGO = "img/u51-logo-600.jpg"; LOGO_SM = "img/u51-logo-160.jpg"; OG = f"{base}/img/u51-og-1200.jpg"
 def head(title, desc, url, rel):
     return ("<!--u51head-->"
             f"<link rel=icon href='{rel}favicon.ico' sizes=any><link rel=icon type=image/png href='{rel}img/favicon-32.png'>"
@@ -21,33 +25,114 @@ def head(title, desc, url, rel):
             f"<meta property='og:image' content='{OG}'><meta property='og:image:width' content='1200'><meta property='og:image:height' content='1200'>"
             f"<meta name='twitter:card' content='summary'><meta name='twitter:site' content='@{B.X_HANDLE}'><meta name='twitter:image' content='{OG}'>"
             "<!--/u51head-->")
-# Listen buttons (only platforms with a confirmed URL in brand.py are shown)
-ICON = {
- "Spotify": "<svg viewBox='0 0 24 24' width='{s}' height='{s}' aria-hidden='true'><circle cx='12' cy='12' r='12' fill='#1DB954'/><path d='M6.5 9.3c3.8-1.1 8-.8 11.2 1.1M7.2 12.4c3.1-.9 6.6-.6 9.3.9M7.9 15.3c2.5-.7 5.2-.5 7.3.7' stroke='#000' stroke-width='1.7' stroke-linecap='round' fill='none'/></svg>",
- "Apple Podcasts": "<svg viewBox='0 0 24 24' width='{s}' height='{s}' aria-hidden='true'><rect width='24' height='24' rx='5.5' fill='#9933CC'/><circle cx='12' cy='10.2' r='2.1' fill='#fff'/><path d='M10.6 13.6h2.8l-.5 5.6h-1.8z' fill='#fff'/><path d='M8 15.6a5.8 5.8 0 1 1 8 0' stroke='#fff' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>",
- "Pocket Casts": "<svg viewBox='0 0 24 24' width='{s}' height='{s}' aria-hidden='true'><circle cx='12' cy='12' r='12' fill='#F43E37'/><path d='M12 5.2a6.8 6.8 0 1 0 6.8 6.8h-2.2A4.6 4.6 0 1 1 12 7.4z' fill='#fff'/><path d='M12 9.2a2.8 2.8 0 1 0 2.8 2.8h-1.3A1.5 1.5 0 1 1 12 10.5z' fill='#fff'/></svg>",
+
+# Outline icons from Lucide (https://lucide.dev, lucide-static 1.60.0), ISC licence. Inner SVG markup only.
+ICONS = {
+ "archive": '<rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/>',
+ "arrow-left": '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
+ "at-sign": '<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>',
+ "audio-lines": '<path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/>',
+ "calendar": '<path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/>',
+ "chevron-right": '<path d="m9 18 6-6-6-6"/>',
+ "circle-play": '<path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/>',
+ "clock": '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+ "external-link": '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+ "file-text": '<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
+ "headphones": '<path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/>',
+ "list-music": '<path d="M16 5H3"/><path d="M11 12H3"/><path d="M11 19H3"/><path d="M21 16V5"/><circle cx="18" cy="16" r="3"/>',
+ "moon": '<path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/>',
+ "podcast": '<path d="M12 17v4"/><path d="M18 11a6 6 0 00-3-5.197"/><path d="M2 11a10 10 0 015-8.662"/><path d="M22 11a10 10 0 00-5-8.662"/><path d="M6 11a6 6 0 013-5.197"/><path d="M9 21h6"/><rect x="10" y="9" width="4" height="8" rx="2"/>',
+ "rss": '<path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/>',
+ "sun": '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+ "wrench": '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/>',
 }
-LISTEN = [(n, u) for n, u in (("Spotify", getattr(B, "SPOTIFY_URL", None)), ("Apple Podcasts", getattr(B, "APPLE_URL", None)), ("Pocket Casts", getattr(B, "POCKETCASTS_URL", None))) if u]
-def listen_row(big=True):
-    sz = 22 if big else 16
-    st = ("display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid #ccd;border-radius:22px;text-decoration:none;color:#111;font-weight:600;background:#f7f8fb"
-          if big else "display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid #ccd;border-radius:14px;text-decoration:none;color:#111;font-size:.85em;background:#f7f8fb")
-    btn = "".join(f"<a href='{u}' target='_blank' rel='noopener' style='{st}' aria-label='Listen on {n}'>{ICON[n].replace('{s}', str(sz))}<span>{n}</span></a>" for n, u in LISTEN)
-    return f"<div class='u51-listen' style='display:flex;flex-wrap:wrap;gap:{10 if big else 6}px;margin:{'.8em 0' if big else '.4em 0 0'}'>{btn}</div>" if LISTEN else ""
-STRIP = re.compile(r"<!--u51(head|hdr)-->.*?<!--/u51\1-->", re.S)
-HDR = (f"<!--u51hdr--><header style='display:flex;align-items:center;gap:14px;margin:0 0 .5em'>"
-       f"<a href='../index.html'><img src='../{LOGO}' alt='{B.SHOW} logo' width=96 height=96 style='border-radius:50%;display:block'></a>"
-       f"<div><a href='../index.html' style='font-weight:bold;font-size:1.15em;color:inherit;text-decoration:none'>{B.SHOW}</a><br>"
-       f"<small>{B.SUBTITLE}</small> | <a href='{B.X_URL}'>Follow on X (@{B.X_HANDLE})</a>" + listen_row(False) + "</div></header><!--/u51hdr-->")
-for f in glob.glob(f"{site}/episodes/*.html"):
-    s0 = open(f).read(); s1 = STRIP.sub("", s0)
-    # drop the old one-line nav bar (first <p> after <body>) if it is the show/X nav
-    s1 = re.sub(r"(<body[^>]*>)<p><a href='../index.html'>.*?</p>", r"\1", s1, count=1, flags=re.S)
-    t = re.search(r"<title>(.*?)</title>", s1, re.S); t = html.unescape(t.group(1)) if t else B.SHOW
-    stem = os.path.basename(f)
-    s1 = s1.replace("</title>", "</title>" + head(t, f"{B.SHOW}: {B.SUBTITLE}.", f"{base}/episodes/{stem}", "../"), 1)
-    s1 = re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + HDR, s1, count=1)
-    if s1 != s0: open(f, "w").write(s1)
+def icon(name, size=18, cls=""):
+    return (f"<svg class='icon {cls}' width='{size}' height='{size}' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' "
+            f"stroke-linecap='round' stroke-linejoin='round' aria-hidden='true' focusable='false'>{ICONS[name]}</svg>")
+
+# Listen links (only platforms with a confirmed URL in brand.py are shown). Spotify is the primary (indigo) button.
+LISTEN = [(n, u, i) for n, u, i in (("Spotify", getattr(B, "SPOTIFY_URL", None), "headphones"),
+                                    ("Apple Podcasts", getattr(B, "APPLE_URL", None), "podcast"),
+                                    ("Pocket Casts", getattr(B, "POCKETCASTS_URL", None), "circle-play")) if u]
+def listen_row(rel, extra=True, small=False):
+    sm = " btn-sm" if small else ""
+    out = "".join(f"<a class='btn {'btn-primary' if k == 0 else 'btn-secondary'}{sm}' href='{u}' target='_blank' rel='noopener' aria-label='Listen on {n}'>{icon(i)}<span>{n}</span></a>"
+                  for k, (n, u, i) in enumerate(LISTEN))
+    if extra:
+        out += (f"<a class='btn btn-secondary{sm}' href='{rel}feed.xml'>{icon('rss')}<span>RSS feed</span></a>"
+                f"<a class='btn btn-secondary{sm}' href='{B.X_URL}' target='_blank' rel='noopener'>{icon('at-sign')}<span>Follow on X (@{B.X_HANDLE})</span></a>")
+    return f"<div class='btn-row u51-listen'>{out}</div>"
+
+def when(x):
+    """(datetime-ish tuple) from the RFC 2822 date in the episode JSON, falling back to the slug."""
+    try: return email.utils.parsedate_to_datetime(x["date"])
+    except Exception:
+        import datetime; return datetime.datetime.strptime(x["slug"][:10], "%Y-%m-%d")
+def fmt_date(x, short=False):
+    d = when(x); return d.strftime("%a %-d %b %Y") if not short else d.strftime("%a %-d %b")
+def fmt_dur(s): s = int(s); return f"{s//3600}:{s%3600//60:02d}:{s%60:02d}" if s >= 3600 else f"{s//60}:{s%60:02d}"
+def split_title(t):
+    """'Episode 6: Topic, 21 October 2026' -> ('Episode 6', 'Topic')."""
+    m = re.match(r"\s*(Episode\s+\d+|Sunday Special[^:]*)\s*[:\u2014-]\s*(.+)$", t)
+    label, rest = (m.group(1), m.group(2)) if m else ("Episode", t)
+    rest = re.sub(r"\s*[,\u2014\u2013-]\s*\d{1,2} [A-Z][a-z]+ \d{4}\s*$", "", rest).strip()
+    return label, rest
+def ep_href(x, rel): return f"{rel}episodes/{x['slug']}.html" if x.get("notes") else f"{rel}episodes/{x['slug']}.mp3"
+
+def shell(*, title, rel, active, desc, url, toolbar, body, chips_extra=()):
+    """Full page: rounded shell, indigo rail, sticky toolbar, content column. rel is '' for the root, '../' for /episodes/."""
+    nav = [("episodes", "Episodes", f"{rel}index.html", "audio-lines", False)]
+    nav += [(k, n, h, i, False) for k, n, h, i in chips_extra]
+    nav += [("toolkit", "Toolkit", f"{rel}toolkit/", "wrench", False),
+            ("feed", "Feed (RSS)", f"{rel}feed.xml", "rss", False),
+            ("x", f"Follow on X", B.X_URL, "at-sign", True)]
+    def item(k, n, h, i, ext, cls):
+        a = " aria-current='page'" if k == active else ""
+        act = " active" if k == active else ""
+        tgt = " target='_blank' rel='noopener'" if ext else ""
+        return f"<a class='{cls}{act}' href='{h}'{a}{tgt}>{icon(i)}<span>{n}</span></a>"
+    rail_nav = "".join(f"<li>{item(*n, 'nav-item')}</li>" for n in nav)
+    listen_nav = "".join(f"<li><a class='nav-item' href='{u}' target='_blank' rel='noopener'>{icon(i)}<span>{n}</span></a></li>" for n, u, i in LISTEN)
+    chips = "".join(item(*n, "chip") for n in nav) + "".join(f"<a class='chip' href='{u}' target='_blank' rel='noopener'>{icon(i, 16)}<span>{n}</span></a>" for n, u, i in LISTEN)
+    switch_rail = (f"<button type='button' class='switch switch-rail' role='switch' aria-checked='false' data-theme-toggle>"
+                   f"{icon('sun', 18, 'i-sun')}{icon('moon', 18, 'i-moon')}<span class='switch-label'>Dark mode</span><span class='track'><span class='knob'></span></span></button>")
+    switch_compact = (f"<button type='button' class='switch switch-compact' role='switch' aria-checked='false' aria-label='Dark mode' data-theme-toggle>"
+                      f"{icon('sun', 18, 'i-sun')}{icon('moon', 18, 'i-moon')}<span class='track'><span class='knob'></span></span></button>")
+    return (
+        "<!doctype html>\n<html lang=en-AU class=no-js><head><meta charset=utf-8>"
+        "<meta name=viewport content='width=device-width, initial-scale=1'>"
+        f"<title>{e(title)}</title>" + head(title, desc, url, rel) +
+        f"<meta name=description content='{e(desc)}'>"
+        f"<link rel=alternate type=application/rss+xml title='{e(B.SHOW)}' href='{base}/feed.xml'>"
+        "<link rel=preconnect href='https://fonts.googleapis.com'><link rel=preconnect href='https://fonts.gstatic.com' crossorigin>"
+        "<link rel=stylesheet href='https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap'>"
+        f"<link rel=stylesheet href='{rel}assets/site.css'><script src='{rel}assets/theme-init.js'></script>"
+        f"<script src='{rel}assets/site.js' defer></script></head>\n<body>"
+        "<a class=skip href='#content'>Skip to content</a><div class=shell>"
+        f"<aside class=rail aria-label='Site'>"
+        f"<a class=wordmark href='{rel}index.html'><img src='{rel}{LOGO_SM}' alt='' width=160 height=160><span><strong>{B.SHORT}</strong><small>Cyber and AI Security Pod</small></span></a>"
+        f"<nav aria-label='Main'><ul class=nav>{rail_nav}</ul></nav>"
+        f"<nav aria-label='Listen'><p class=nav-label>Listen</p><ul class=nav>{listen_nav}</ul></nav>"
+        f"<div class=rail-foot>{switch_rail}</div></aside>"
+        "<main class=main>"
+        f"<header class=toolbar><div class=toolbar-row>"
+        f"<a class=mobile-mark href='{rel}index.html'><img src='{rel}{LOGO_SM}' alt='' width=160 height=160><span>{B.SHORT}</span></a>"
+        f"<div class=toolbar-title>{toolbar}</div>{switch_compact}</div>"
+        f"<nav class=chips aria-label='Sections'>{chips}</nav></header>"
+        f"<div class=content id=content tabindex=-1>{body}"
+        f"<footer class=site-foot>{B.SHOW}. {B.SUBTITLE}. Not for profit, open sources only. "
+        f"<a href='{rel}feed.xml'>RSS</a> · <a href='{B.X_URL}'>@{B.X_HANDLE}</a></footer>"
+        "</div></main></div></body></html>\n")
+
+def write_if_changed(path, s):
+    if not os.path.exists(path) or open(path).read() != s: open(path, "w").write(s)
+
+# ---------- assets ----------
+os.makedirs(f"{site}/assets", exist_ok=True)
+for n in ("site.css", "theme-init.js", "site.js"):
+    write_if_changed(f"{site}/assets/{n}", open(f"{ASSETS_SRC}/{n}").read())
+
+# ---------- feed (unchanged format: lists every episode, no cap) ----------
 eps = sorted((json.load(open(f)) for f in glob.glob(f"{site}/episodes/*.json") if os.path.exists(f[:-5] + ".mp3")), key=lambda x: x["slug"], reverse=True)
 items = ""
 for x in eps:
@@ -74,16 +159,59 @@ for k, v in {"SHOW_TITLE": e(B.SHOW), "SITE_URL": base, "DESCRIPTION": e(DESC), 
     t = t.replace("{{" + k + "}}", v)
 t = t.replace("  <!-- ITEMS -->\n", items)
 open(f"{site}/feed.xml", "w").write(t)
-li = "".join(f"<li><a href='episodes/{x['slug']}.html'>{e(x['title'])}</a></li>" if x.get("notes") else f"<li><a href='episodes/{x['slug']}.mp3'>{e(x['title'])}</a></li>" for x in eps)
-open(f"{site}/index.html", "w").write(
-    f"<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width'><title>{B.SHOW}</title>"
-    + head(B.SHOW, f"{B.SHOW}: {B.SUBTITLE}.", f"{base}/", "")
-    + f"<meta name=description content='{e(B.SHOW)}: {e(B.SUBTITLE)}.'>"
-    f"<body style='font-family:sans-serif;max-width:900px;margin:auto;padding:1em;background:#fff'>"
-    f"<a href='./'><img src='img/u51-banner-1500.jpg' alt='{B.SHORT} banner' width=1500 height=500 style='width:100%;height:auto;display:block;border-radius:8px'></a>"
-    f"<div style='display:flex;align-items:center;gap:20px;margin:1em 0;flex-wrap:wrap'>"
-    f"<img src='{LOGO}' alt='{B.SHOW} logo' width=200 height=200 style='border-radius:50%'>"
-    f"<div><h1 style='margin:0 0 .3em'>{B.SHOW}</h1><p style='margin:0'>{B.SUBTITLE}. <a href='feed.xml'>RSS feed</a> | <a href='{B.X_URL}'>Follow on X (@{B.X_HANDLE})</a></p>"
-    + listen_row(True) + "</div></div>"
-    f"<h2>Episodes</h2><ul>{li}</ul></body>")
-print(f"built feed.xml ({len(eps)} episodes) and index.html")
+
+# ---------- episode notes pages (rendered in full from JSON; written only when the content changes) ----------
+for x in eps:
+    if not x.get("notes"): continue
+    label, short = split_title(x["title"])
+    body = (f"<section class='card ep-head'><a class=back href='../index.html'>{icon('arrow-left', 16)}All episodes</a>"
+            f"<div class=ep-meta><span>{label}</span><span>{icon('calendar', 16)}<time datetime='{when(x).isoformat()}'>{fmt_date(x)}</time></span>"
+            f"<span>{icon('clock', 16)}<span class=dur>{fmt_dur(x['dur'])}</span></span></div>"
+            f"<h1>{e(x['title'])}</h1>"
+            f"<div class=player><audio controls preload=metadata src='{x['slug']}.mp3'></audio></div>"
+            + listen_row("../", extra=False, small=True) + "</section>"
+            f"<article class='card notes'><!--u51notes-->{x['notes']}<!--/u51notes--></article>")
+    page = shell(title=x["title"], rel="../", active="episodes", desc=f"{B.SHOW}: {B.SUBTITLE}.", url=f"{base}/episodes/{x['slug']}.html",
+                 toolbar=f"<p class=h1>Episodes</p><p class=caption>{label}</p>", body=body)
+    write_if_changed(f"{site}/episodes/{x['slug']}.html", page)
+
+# ---------- homepage ----------
+def ep_card(x):
+    label, short = split_title(x["title"])
+    return (f"<article class='card ep-card'><p class=ep-label><span>{label}</span>{'' if x.get('notes') else '<span class=tag>Audio only</span>'}</p>"
+            f"<h3><a href='{ep_href(x, '')}'>{e(short)}</a></h3>"
+            f"<p class=ep-meta><span>{icon('calendar', 16)}<time datetime='{when(x).isoformat()}'>{fmt_date(x)}</time></span>"
+            f"<span>{icon('clock', 16)}<span class=dur>{fmt_dur(x['dur'])}</span></span></p></article>")
+latest, older = eps[:LATEST_N], eps[LATEST_N:]
+feature = ""
+if eps:
+    x = eps[0]; label, short = split_title(x["title"])
+    feature = (f"<section class='card feature' aria-labelledby=latest-title><p class=ep-meta><span>Latest · {label}</span>"
+               f"<span>{icon('calendar', 16)}<time datetime='{when(x).isoformat()}'>{fmt_date(x)}</time></span>"
+               f"<span>{icon('clock', 16)}<span class=dur>{fmt_dur(x['dur'])}</span></span></p>"
+               f"<h3 id=latest-title><a href='{ep_href(x, '')}'>{e(short)}</a></h3>"
+               f"<div class=player><audio controls preload=none src='episodes/{x['slug']}.mp3'></audio></div>"
+               + (f"<div class=btn-row><a class='btn btn-primary' href='{ep_href(x, '')}'>{icon('file-text')}<span>Show notes</span></a></div>" if x.get("notes") else "")
+               + "</section>")
+archive = ""
+if older:
+    months = {}
+    for x in older: months.setdefault(when(x).strftime("%B %Y"), []).append(x)
+    groups = "".join(f"<div><h3>{m}</h3><ul class=arc-list>" + "".join(
+        f"<li class=arc-row><time datetime='{when(x).isoformat()}'>{fmt_date(x, short=True)}</time>"
+        f"<a href='{ep_href(x, '')}'>{e(x['title'])}</a><span class=dur>{fmt_dur(x['dur'])}</span></li>" for x in xs) + "</ul></div>"
+        for m, xs in months.items())
+    archive = (f"<div class=section-head id=archive><h2>Archive</h2><span class=caption>{len(older)} older episode{'s' if len(older) != 1 else ''}, by month</span></div>"
+               f"<section class='card archive' aria-label='Archive'>{groups}</section>")
+hero = (f"<section class='card hero'><img class=hero-banner src='img/u51-banner-1500.jpg' alt='{B.SHORT} banner' width=1500 height=500>"
+        f"<div class=hero-body><img class=hero-logo src='{LOGO}' alt='{e(B.SHOW)} logo' width=200 height=200>"
+        f"<div class=hero-text><h2>{B.SHOW}</h2><p>{B.SUBTITLE}. A short daily executive briefing on the cyber threats, vulnerabilities "
+        f"and AI security developments that matter, with an Australian lens. Open sources only.</p>"
+        + listen_row("", extra=True) + "</div></div></section>")
+body = (hero + feature +
+        f"<div class=section-head id=episodes><h2>Episodes</h2><span class=caption>Latest {len(latest)}, newest first</span></div>"
+        f"<div class=ep-grid>{''.join(ep_card(x) for x in latest)}</div>" + archive)
+extra_nav = [("archive", "Archive", "#archive", "archive")] if older else []
+write_if_changed(f"{site}/index.html", shell(title=B.SHOW, rel="", active="episodes", desc=f"{B.SHOW}: {B.SUBTITLE}.", url=f"{base}/",
+     toolbar="<h1>Episodes</h1><p class=caption>Latest episodes</p>", body=body, chips_extra=extra_nav))
+print(f"built feed.xml ({len(eps)} episodes), index.html ({len(latest)} cards, {len(older)} archived) and {sum(1 for x in eps if x.get('notes'))} notes pages")

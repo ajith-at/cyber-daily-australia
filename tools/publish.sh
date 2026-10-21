@@ -12,8 +12,7 @@ RAW=$D/build/$SLUG-raw.mp3; OUT=$SITE/episodes/$SLUG.mp3
 ffmpeg -v error -y -i "$RAW" -af loudnorm=I=-16:TP=-1.5:LRA=11 -ar 44100 -ac 1 -b:a 96k "$OUT"
 cp "$SCRIPT" "$SITE/episodes/$SLUG.txt"
 case "$NOTES" in *.md|*.markdown) "$D/venv/bin/python" -c "import sys,markdown;print(markdown.markdown(open(sys.argv[1]).read()))" "$NOTES" > "$D/build/$SLUG-notes.html";; *) cp "$NOTES" "$D/build/$SLUG-notes.html";; esac
-# retention: delete episodes older than 90 days
-find "$SITE/episodes" -type f \( -name '*.mp3' -o -name '*.txt' -o -name '*.json' -o -name '*.html' \) -mtime +90 -delete
+# no retention step: every episode is kept forever (feed and archive list them all)
 DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$OUT")
 SUMMARY=$(head -c 400 "$SCRIPT" | tr '\n' ' ')
 python3 - "$SITE" "$SLUG" "$TITLE" "$DUR" "$SUMMARY" "$BASE" "$D/build/$SLUG-notes.html" <<'PY'
@@ -21,13 +20,13 @@ import sys,json,os,email.utils,html,time,re
 sys.path.insert(0,"/workspace/podcast"); import brand as B
 site,slug,title,dur,summ,base,notesf=sys.argv[1:]
 notes=open(notesf).read(); e=html.escape
-open(f"{site}/episodes/{slug}.html","w").write(f"<!doctype html><meta charset=utf-8><meta name=viewport content='width=device-width'><title>{e(title)}</title><body style='font-family:sans-serif;max-width:760px;margin:auto;padding:1em'><p><a href='../index.html'>{B.SHOW}</a> | <a href='{B.X_URL}'>Follow on X (@{B.X_HANDLE})</a></p><h1>{e(title)}</h1><audio controls src='{slug}.mp3'></audio>{notes}</body>")
+# the notes page (episodes/<slug>.html) is rendered in full from this JSON by build_site.py (Soft Indigo Desk layout)
 plain=re.sub(r"\s+"," ",re.sub(r"<[^>]+>"," ",notes)).strip()
 mp3=f"{site}/episodes/{slug}.mp3"
 json.dump({"title":title,"slug":slug,"dur":int(float(dur)),"size":os.path.getsize(mp3),
  "notes":notes,"plain":plain,"date":email.utils.formatdate(time.time(),localtime=True),"summary":summ},open(f"{site}/episodes/{slug}.json","w"))
 PY
-# feed.xml, index.html and notes-page nav bars (branding lives in brand.py)
+# feed.xml, index.html, every notes page and site/assets/ (branding in brand.py, styles in assets_src/)
 python3 "$D/build_site.py" "$SITE"
 touch "$SITE/.nojekyll"
 echo "Built $OUT ($DUR s)"
