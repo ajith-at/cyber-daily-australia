@@ -33,6 +33,7 @@ ICONS = {
  "at-sign": '<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>',
  "audio-lines": '<path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/>',
  "calendar": '<path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/>',
+ "chevron-left": '<path d="m15 18-6-6 6-6"/>',
  "chevron-right": '<path d="m9 18 6-6-6-6"/>',
  "circle-play": '<path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/>',
  "clock": '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
@@ -71,15 +72,19 @@ def when(x):
 def fmt_date(x, short=False):
     d = when(x); return d.strftime("%a %-d %b %Y") if not short else d.strftime("%a %-d %b")
 def fmt_dur(s): s = int(s); return f"{s//3600}:{s%3600//60:02d}:{s%60:02d}" if s >= 3600 else f"{s//60}:{s%60:02d}"
-def split_title(t):
-    """'Episode 6: Topic, 21 October 2026' -> ('Episode 6', 'Topic')."""
-    m = re.match(r"\s*(Episode\s+\d+|Sunday Special[^:]*)\s*[:\u2014-]\s*(.+)$", t)
-    label, rest = (m.group(1), m.group(2)) if m else ("Episode", t)
+def split_title(t, x=None):
+    """'Episode 6: Topic, 21 October 2026' -> ('Episode 6', 'Topic'). The number comes from the JSON 'episode' field if set,
+    else from 'Episode N' anywhere in the title. Sunday Specials are numbered like any other episode (25 Oct 2026 = Episode 10)."""
+    n = (x or {}).get("episode")
+    m = re.search(r"\bEpisode\s+(\d+)", t)
+    if n is None and m: n = int(m.group(1))
+    rest = re.sub(r"^\s*Episode\s+\d+\s*[:\u2014\u2013-]\s*", "", t)
     rest = re.sub(r"\s*[,\u2014\u2013-]\s*\d{1,2} [A-Z][a-z]+ \d{4}\s*$", "", rest).strip()
-    return label, rest
+    return (f"Episode {n}" if n is not None else "Episode"), rest
+def is_special(x): return bool(re.search(r"sunday special", x["title"], re.I)) or x.get("special") is True
 def ep_href(x, rel): return f"{rel}episodes/{x['slug']}.html" if x.get("notes") else f"{rel}episodes/{x['slug']}.mp3"
 
-def shell(*, title, rel, active, desc, url, toolbar, body, chips_extra=()):
+def shell(*, title, rel, active, desc, url, toolbar, body, chips_extra=(), cal_current=""):
     """Full page: rounded shell, indigo rail, sticky toolbar, content column. rel is '' for the root, '../' for /episodes/."""
     nav = [("episodes", "Episodes", f"{rel}index.html", "audio-lines", False)]
     nav += [(k, n, h, i, False) for k, n, h, i in chips_extra]
@@ -93,7 +98,8 @@ def shell(*, title, rel, active, desc, url, toolbar, body, chips_extra=()):
         return f"<a class='{cls}{act}' href='{h}'{a}{tgt}>{icon(i)}<span>{n}</span></a>"
     rail_nav = "".join(f"<li>{item(*n, 'nav-item')}</li>" for n in nav)
     listen_nav = "".join(f"<li><a class='nav-item' href='{u}' target='_blank' rel='noopener'>{icon(i)}<span>{n}</span></a></li>" for n, u, i in LISTEN)
-    chips = "".join(item(*n, "chip") for n in nav) + "".join(f"<a class='chip' href='{u}' target='_blank' rel='noopener'>{icon(i, 16)}<span>{n}</span></a>" for n, u, i in LISTEN)
+    cal_href = "#calendar" if rel == "" else f"{rel}index.html#calendar"
+    chips = "".join(item(*n, "chip") for n in nav[:1]) + f"<a class='chip js-only' href='{cal_href}'>{icon('calendar', 16)}<span>Calendar</span></a>" + "".join(item(*n, "chip") for n in nav[1:]) + "".join(f"<a class='chip' href='{u}' target='_blank' rel='noopener'>{icon(i, 16)}<span>{n}</span></a>" for n, u, i in LISTEN)
     switch_rail = (f"<button type='button' class='switch switch-rail' role='switch' aria-checked='false' data-theme-toggle>"
                    f"{icon('sun', 18, 'i-sun')}{icon('moon', 18, 'i-moon')}<span class='switch-label'>Dark mode</span><span class='track'><span class='knob'></span></span></button>")
     switch_compact = (f"<button type='button' class='switch switch-compact' role='switch' aria-checked='false' aria-label='Dark mode' data-theme-toggle>"
@@ -107,12 +113,14 @@ def shell(*, title, rel, active, desc, url, toolbar, body, chips_extra=()):
         "<link rel=preconnect href='https://fonts.googleapis.com'><link rel=preconnect href='https://fonts.gstatic.com' crossorigin>"
         "<link rel=stylesheet href='https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap'>"
         f"<link rel=stylesheet href='{rel}assets/site.css'><script src='{rel}assets/theme-init.js'></script>"
-        f"<script src='{rel}assets/site.js' defer></script></head>\n<body>"
+        f"<script src='{rel}assets/site.js' defer></script>"
+        f"<script src='{rel}assets/episodes.js' defer></script><script src='{rel}assets/calendar.js' defer></script></head>\n<body>"
         "<a class=skip href='#content'>Skip to content</a><div class=shell>"
         f"<aside class=rail aria-label='Site'>"
         f"<a class=wordmark href='{rel}index.html'><img src='{rel}{LOGO_SM}' alt='' width=160 height=160><span><strong>{B.SHORT}</strong><small>Cyber and AI Security Pod</small></span></a>"
         f"<nav aria-label='Main'><ul class=nav>{rail_nav}</ul></nav>"
         f"<nav aria-label='Listen'><p class=nav-label>Listen</p><ul class=nav>{listen_nav}</ul></nav>"
+        f"<section class='cal cal-rail js-only' data-cal data-root='{rel}' data-current='{cal_current}' aria-label='Episode calendar'></section>"
         f"<div class=rail-foot>{switch_rail}</div></aside>"
         "<main class=main>"
         f"<header class=toolbar><div class=toolbar-row>"
@@ -129,11 +137,12 @@ def write_if_changed(path, s):
 
 # ---------- assets ----------
 os.makedirs(f"{site}/assets", exist_ok=True)
-for n in ("site.css", "theme-init.js", "site.js"):
+for n in ("site.css", "theme-init.js", "site.js", "calendar.js"):
     write_if_changed(f"{site}/assets/{n}", open(f"{ASSETS_SRC}/{n}").read())
 
 # ---------- feed (unchanged format: lists every episode, no cap) ----------
 eps = sorted((json.load(open(f)) for f in glob.glob(f"{site}/episodes/*.json") if os.path.exists(f[:-5] + ".mp3")), key=lambda x: x["slug"], reverse=True)
+def img_tag(x): return f'    <itunes:image href="{base}/episodes/{x["image"]}"/>\n' if x.get("image") else ""
 items = ""
 for x in eps:
     d = x["dur"]; notes = x.get("notes")
@@ -150,7 +159,7 @@ for x in eps:
     <itunes:duration>{d//3600:02d}:{d%3600//60:02d}:{d%60:02d}</itunes:duration>
     <itunes:episodeType>full</itunes:episodeType>
     <itunes:explicit>false</itunes:explicit>
-  </item>
+{img_tag(x)}  </item>
 """
 # NB: guid prefix "cyber-daily-australia-" is intentionally unchanged so podcast apps don't see old episodes as new.
 t = open("/workspace/podcast/feed_template.xml").read()
@@ -160,11 +169,31 @@ for k, v in {"SHOW_TITLE": e(B.SHOW), "SITE_URL": base, "DESCRIPTION": e(DESC), 
 t = t.replace("  <!-- ITEMS -->\n", items)
 open(f"{site}/feed.xml", "w").write(t)
 
+# ---------- episode artwork (Sunday Specials): a 600px web copy of episodes/<slug>.jpg for the site ----------
+def thumb(x):
+    """Relative (to /episodes/) name of a web-sized copy of the episode image, or None. The full image stays for the feed."""
+    img = x.get("image")
+    if not img or not os.path.exists(f"{site}/episodes/{img}"): return None
+    small = re.sub(r"\.(jpe?g|png)$", "", img) + "-600.jpg"
+    if not os.path.exists(f"{site}/episodes/{small}"):
+        try:
+            from PIL import Image
+            Image.open(f"{site}/episodes/{img}").convert("RGB").resize((600, 600), Image.LANCZOS).save(f"{site}/episodes/{small}", quality=85, optimize=True, progressive=True)
+        except Exception as ex:
+            print("WARN: thumbnail resize failed, using full image:", ex); return img
+    return small
+
+# ---------- calendar data (assets/episodes.js, read by assets/calendar.js; oldest first, Melbourne dates) ----------
+cal = [{"d": when(x).strftime("%Y-%m-%d"), "n": split_title(x["title"], x)[0], "t": x["title"], "u": ep_href(x, "")} for x in reversed(eps)]
+write_if_changed(f"{site}/assets/episodes.js", "window.U51_EPISODES = " + json.dumps(cal, ensure_ascii=False, separators=(",", ":")) + ";\n")
+
 # ---------- episode notes pages (rendered in full from JSON; written only when the content changes) ----------
 for x in eps:
     if not x.get("notes"): continue
-    label, short = split_title(x["title"])
-    body = (f"<section class='card ep-head'><a class=back href='../index.html'>{icon('arrow-left', 16)}All episodes</a>"
+    label, short = split_title(x["title"], x)
+    th = thumb(x)
+    art = f"<img class=ep-art src='{th}' alt='{e(label)} artwork' width=600 height=600>" if th else ""
+    body = (f"<section class='card ep-head{' has-art' if th else ''}'>{art}<a class=back href='../index.html'>{icon('arrow-left', 16)}All episodes</a>"
             f"<div class=ep-meta><span>{label}</span><span>{icon('calendar', 16)}<time datetime='{when(x).isoformat()}'>{fmt_date(x)}</time></span>"
             f"<span>{icon('clock', 16)}<span class=dur>{fmt_dur(x['dur'])}</span></span></div>"
             f"<h1>{e(x['title'])}</h1>"
@@ -172,20 +201,25 @@ for x in eps:
             + listen_row("../", extra=False, small=True) + "</section>"
             f"<article class='card notes'><!--u51notes-->{x['notes']}<!--/u51notes--></article>")
     page = shell(title=x["title"], rel="../", active="episodes", desc=f"{B.SHOW}: {B.SUBTITLE}.", url=f"{base}/episodes/{x['slug']}.html",
-                 toolbar=f"<p class=h1>Episodes</p><p class=caption>{label}</p>", body=body)
+                 toolbar=f"<p class=h1>Episodes</p><p class=caption>{label}</p>", body=body, cal_current=when(x).strftime("%Y-%m-%d"))
     write_if_changed(f"{site}/episodes/{x['slug']}.html", page)
 
 # ---------- homepage ----------
 def ep_card(x):
-    label, short = split_title(x["title"])
-    return (f"<article class='card ep-card'><p class=ep-label><span>{label}</span>{'' if x.get('notes') else '<span class=tag>Audio only</span>'}</p>"
+    label, short = split_title(x["title"], x)
+    if is_special(x): short = re.sub(r"^Sunday Special\s*[:\u2014\u2013-]\s*", "", short)   # the tag says it
+    th = thumb(x)
+    tags = ("<span class=tag>Sunday Special</span>" if is_special(x) else "") + ("" if x.get("notes") else "<span class=tag>Audio only</span>")
+    return (f"<article class='card ep-card{' has-thumb' if th else ''}'>"
+            + (f"<img class=ep-thumb src='episodes/{th}' alt='' width=600 height=600 loading=lazy>" if th else "")
+            + f"<p class=ep-label><span>{label}</span>{tags}</p>"
             f"<h3><a href='{ep_href(x, '')}'>{e(short)}</a></h3>"
             f"<p class=ep-meta><span>{icon('calendar', 16)}<time datetime='{when(x).isoformat()}'>{fmt_date(x)}</time></span>"
             f"<span>{icon('clock', 16)}<span class=dur>{fmt_dur(x['dur'])}</span></span></p></article>")
 latest, older = eps[:LATEST_N], eps[LATEST_N:]
 feature = ""
 if eps:
-    x = eps[0]; label, short = split_title(x["title"])
+    x = eps[0]; label, short = split_title(x["title"], x)
     feature = (f"<section class='card feature' aria-labelledby=latest-title><p class=ep-meta><span>Latest · {label}</span>"
                f"<span>{icon('calendar', 16)}<time datetime='{when(x).isoformat()}'>{fmt_date(x)}</time></span>"
                f"<span>{icon('clock', 16)}<span class=dur>{fmt_dur(x['dur'])}</span></span></p>"
@@ -211,7 +245,9 @@ hero = (f"<section class='card hero'><img class=hero-banner src='{BW['src']}' sr
         + listen_row("", extra=True) + "</div></div></section>")
 body = (hero + feature +
         f"<div class=section-head id=episodes><h2>Episodes</h2><span class=caption>Latest {len(latest)}, newest first</span></div>"
-        f"<div class=ep-grid>{''.join(ep_card(x) for x in latest)}</div>" + archive)
+        f"<div class=ep-grid>{''.join(ep_card(x) for x in latest)}</div>"
+        "<section class='card cal-card js-only' id=calendar aria-labelledby=cal-title><h2 id=cal-title>Browse by date</h2>"
+        "<div class=cal data-cal data-root='' aria-label='Episode calendar'></div></section>" + archive)
 extra_nav = [("archive", "Archive", "#archive", "archive")] if older else []
 write_if_changed(f"{site}/index.html", shell(title=B.SHOW, rel="", active="episodes", desc=f"{B.SHOW}: {B.SUBTITLE}.", url=f"{base}/",
      toolbar="<h1>Episodes</h1><p class=caption>Latest episodes</p>", body=body, chips_extra=extra_nav))

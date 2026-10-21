@@ -216,3 +216,59 @@ audio { width: 100%; height: 44px; display: block; border-radius: 999px; color-s
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* ---------- episode calendar (sidebar on desktop, "Browse by date" card on mobile) ---------- */
+.js-only { }
+.no-js .js-only { display: none !important; }
+.cal { font-variant-numeric: tabular-nums; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; gap: .25rem; margin-bottom: .25rem; }
+.cal-title { font-weight: 800; font-size: .875rem; }
+.cal-nav { width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: inherit; display: inline-flex; align-items: center; justify-content: center; transition: background-color .15s ease-out; }
+.cal-nav:hover:not([disabled]) { background: var(--indigo-soft); }
+.cal-nav[disabled] { opacity: .35; cursor: default; }
+.cal-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.cal-grid th { font-size: .6875rem; font-weight: 600; color: var(--muted); padding: 0 0 .25rem; text-align: center; }
+.cal-grid td { padding: 1px; text-align: center; }
+.cal-day { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 100%; max-width: 2.25rem; aspect-ratio: 1; border-radius: 999px; font-size: .75rem; font-weight: 600; color: var(--faint); text-decoration: none; }
+a.cal-day { color: var(--ink); font-weight: 800; background: var(--indigo-soft); transition: background-color .15s ease-out; }
+a.cal-day:hover { background: var(--indigo); color: var(--on-primary); }
+.cal-day.is-today { box-shadow: inset 0 0 0 1.5px var(--indigo); }
+a.cal-day.is-current { background: var(--indigo); color: var(--on-primary); }
+.cal-count { position: absolute; top: -2px; right: -2px; min-width: 14px; height: 14px; padding: 0 3px; border-radius: 999px; background: var(--indigo); color: var(--on-primary); box-shadow: 0 0 0 1.5px var(--card); font-size: .5625rem; font-weight: 800; line-height: 14px; }
+/* on the indigo rail */
+.cal-rail { color: var(--on-indigo); background: rgba(255,255,255,.08); border-radius: var(--r-inset); padding: .625rem .5rem .5rem; }
+.cal-rail .cal-title { padding-left: .25rem; }
+.cal-rail .cal-nav:hover:not([disabled]) { background: rgba(255,255,255,.14); }
+.cal-rail .cal-grid th { color: var(--on-indigo); opacity: .7; }
+.cal-rail .cal-day { color: var(--on-indigo); opacity: .5; height: 1.75rem; max-width: 1.75rem; aspect-ratio: auto; }
+.cal-rail a.cal-day { opacity: 1; background: rgba(255,255,255,.2); color: var(--on-indigo); }
+.cal-rail a.cal-day:hover { background: rgba(255,255,255,.32); }
+.cal-rail .cal-day.is-today { box-shadow: inset 0 0 0 1.5px var(--on-indigo); opacity: 1; }
+.cal-rail a.cal-day.is-current { background: var(--on-indigo); color: var(--sidebar); }
+.cal-rail .cal-count { background: var(--on-indigo); color: var(--sidebar); box-shadow: 0 0 0 1.5px var(--sidebar); }
+/* mobile card (desktop uses the rail) */
+.cal-card { display: none; }
+.cal-card h2 { font-size: 1rem; margin-bottom: .5rem; }
+
+/* ---------- episode artwork (Sunday Specials) ---------- */
+.ep-card.has-thumb { display: grid; grid-template-columns: 5.5rem 1fr; grid-template-rows: auto 1fr auto; column-gap: .875rem; row-gap: .375rem; }
+.ep-card.has-thumb > * { grid-column: 2; }
+.ep-card.has-thumb > .ep-thumb { grid-column: 1; grid-row: 1 / span 2; }
+.ep-card.has-thumb > .ep-meta { grid-column: 1 / -1; }
+.ep-thumb { display: block; width: 5.5rem; height: 5.5rem; object-fit: cover; border-radius: var(--r-inset); box-shadow: var(--shadow); }
+.ep-head.has-art { grid-template-columns: 9rem 1fr; column-gap: 1.25rem; }
+.ep-head.has-art > * { grid-column: 2; }
+.ep-head.has-art > .ep-art { grid-column: 1; grid-row: 1 / span 4; }
+.ep-art { display: block; width: 9rem; height: 9rem; border-radius: var(--r-inset); box-shadow: var(--shadow); }
+
+@media (max-width: 860px) {
+  .cal-card { display: block; scroll-margin-top: 7rem; }
+  .cal-card .cal-grid td { padding: 0; }
+  .cal-card .cal-day { max-width: 46px; min-width: 44px; min-height: 44px; font-size: .875rem; }
+  .cal-card .cal-grid { border-spacing: 0; }
+  .cal-card .cal-nav { width: 44px; height: 44px; }
+  .cal-count { top: 0; right: 0; }
+  .ep-head.has-art { grid-template-columns: 1fr; }
+  .ep-head.has-art > *, .ep-head.has-art > .ep-art { grid-column: 1; grid-row: auto; }
+  .ep-art { width: 7rem; height: 7rem; }
+}
