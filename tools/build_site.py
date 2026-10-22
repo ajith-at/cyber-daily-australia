@@ -4,13 +4,13 @@ Usage: python3 build_site.py [SITE_DIR]. Called by publish.sh; safe to run on it
 Style: 'Soft Indigo Desk' (brief: /workspace/shared/style/soft-indigo-desk.md), matching the Cyber Toolkit at /toolkit/.
 Stylesheet and scripts live in /workspace/podcast/assets_src/ and are copied to site/assets/ (never link to /toolkit/ assets:
 the toolkit deploy replaces that folder). Episode pages are rendered in full from their JSON, so the layout survives every publish.
-No episode is ever trimmed by age or count: the feed lists every episode; the homepage shows the latest 10 as cards and the rest in an Archive."""
+No episode is ever trimmed by age or count: the feed lists every episode; the homepage shows the latest 8 as cards and the rest in an Archive."""
 import sys, json, glob, os, re, html, shutil, email.utils, time
 sys.path.insert(0, "/workspace/podcast"); import brand as B
 site = sys.argv[1] if len(sys.argv) > 1 else "/workspace/podcast/site"
 base = os.environ.get("BASE_URL", B.BASE); e = html.escape
 ASSETS_SRC = os.environ.get("ASSETS_SRC", "/workspace/podcast/assets_src")
-LATEST_N = 10   # full episode cards on the homepage; older episodes go to the Archive (grouped by month)
+LATEST_N = 8    # full episode cards on the homepage; older episodes go to the Archive (grouped by month)
 DESC = (f"{B.SHOW}: {B.SUBTITLE[0].lower() + B.SUBTITLE[1:]}. A short daily executive briefing on the cyber threats, "
         f"vulnerabilities and AI security developments that matter, with an Australian lens. Open sources only. "
         f"Follow on X: @{B.X_HANDLE} ({B.X_URL})")
