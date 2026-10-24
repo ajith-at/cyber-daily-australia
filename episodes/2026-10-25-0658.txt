@@ -1,0 +1,115 @@
+From Melbourne on a Sunday morning, this is the U51 Sunday Special for the twenty-fifth of October, twenty twenty-six. No news run today, just one topic, taken properly.
+
+Here is the question a lot of security teams are now being asked by boards, auditors and customers. How do you know your AI is secure? And, increasingly, how do you know your AI agents are secure, the ones that read email, call tools and take actions on someone's behalf? There is no single answer. What exists instead is a stack of frameworks, standards, catalogues and laws, each doing one job, and each easy to confuse with the others.
+
+So today we'll map that stack, and then spend the middle of the episode on the newest piece of it: ISO and IEC twenty-seven oh ninety, published on the fourteenth of October.
+
+To keep the map straight, it helps to sort everything into four buckets. First, governance and risk frameworks: these describe what an organisation should manage. Second, security threat guidance: what attacks you need to defend against, and how. Third, threat catalogues: how attackers actually go about it, technique by technique. And fourth, regulation: what you are legally required to do. Most confusion in this area comes from expecting a document in one bucket to do the job of another.
+
+A quick example of how that goes wrong. A company earns a management system certificate for AI, and a customer reads it as proof that the company's chatbot can't be talked into leaking data. It isn't proof of that. The certificate says the company has a working process for governing AI. Whether a given system stands up to a given attack is a different question, answered by different documents and, ultimately, by testing.
+
+Let's start with the foundation most people already know.
+
+The United States National Institute of Standards and Technology, NIST, released its AI Risk Management Framework, the AI R M F, in January twenty twenty-three. It is voluntary. It is organised around four functions: Govern, Map, Measure and Manage. Govern sets up accountability and culture. Map establishes context and identifies risks. Measure analyses and tracks them. Manage prioritises and acts. The framework's real value is a shared vocabulary for what trustworthy AI means, so that risk, engineering and legal teams can talk about the same thing. It is not a control set, and it was never meant to be.
+
+In July twenty twenty-four NIST added a Generative AI Profile. It's a cross-sector companion that names risks that are new to, or made worse by, generative AI, and lists suggested actions against those same four functions.
+
+Where does NIST stand now? It says the framework is being revised under the White House AI Action Plan, and in April this year it released a concept note for a profile on trustworthy AI in critical infrastructure. There is no official NIST profile for agentic AI yet. You may see drafts from third parties using that label; they are not NIST documents.
+
+On agents specifically, NIST's Center for AI Standards and Innovation, known as CAISI, launched an AI Agent Standards Initiative in February, covering agent security, identity and authorisation, and interoperability. It ran a request for information on agent security, and a concept paper on how agents should be identified and authorised, both of which closed earlier this year.
+
+And for the language of attacks, NIST publishes a taxonomy of adversarial machine learning, updated in March twenty twenty-five. It covers attacks on both predictive and generative AI, grouped by what they target: availability, integrity, privacy, misuse and supply chain.
+
+The takeaway on NIST: it gives you the risk management spine and a shared attack vocabulary. It is deliberately not a certification scheme. Nobody gets an AI R M F certificate, whatever the sales deck says.
+
+Now to the International Organization for Standardization, ISO, and its partner the International Electrotechnical Commission, IEC. Three documents sit around today's main subject.
+
+ISO and IEC forty-two thousand and one, from December twenty twenty-three, sets requirements for an AI management system. This is the certifiable one. If you know how twenty-seven thousand and one works for information security, forty-two oh oh one is the AI equivalent: policies, roles, risk processes, continual improvement, and an external auditor who checks them.
+
+Twenty-three eight ninety-four, from February twenty twenty-three, is guidance on AI risk management. Useful method, not certifiable.
+
+And forty-two oh oh six, from twenty twenty-five, sets requirements for the bodies that audit and certify against forty-two oh oh one. That one matters more than it sounds, because it tightens what a forty-two oh oh one certificate is actually worth.
+
+Here is the gap. Forty-two oh oh one tells you whether an organisation manages AI responsibly. It does not tell you whether a particular model resists poisoning, or whether someone can quietly copy it through its own interface. That gap is where twenty-seven oh ninety sits. But first, the practitioners.
+
+The Open Worldwide Application Security Project, OWASP, keeps a Top Ten for large language model applications. The twenty twenty-five edition puts prompt injection at number one. It's the developer-facing checklist for applications built around a single model.
+
+In December last year OWASP added a Top Ten for Agentic Applications. Its first entry is agent goal hijack. OWASP separates this from ordinary prompt injection for a good reason: with an agent, a manipulated input does not just change one answer, it redirects the agent's goals and every step it takes afterwards. The list also covers identity and privilege abuse, unexpected code execution, memory and context poisoning, and rogue agents. One of OWASP's own examples is EchoLeak, the zero-click prompt injection against Microsoft three sixty-five Copilot. The mitigations it stresses are sensible: treat all natural language input as untrusted, give agent tools the least privilege possible, require human approval for goal-changing or high-impact actions, lock down and audit system prompts, and bring agents into your insider threat programme.
+
+Alongside OWASP is MITRE ATLAS, the Adversarial Threat Landscape for Artificial-Intelligence Systems. Think of it as the ATT and CK framework for attacks on AI. According to the release notes for its September twenty twenty-six version, it now has sixteen tactics, a hundred and twenty techniques, eighty-eight sub-techniques, forty mitigations and seventy-three case studies, with several new techniques aimed at agents, such as discovering what an agent's runtime can do and probing the channels that trigger it.
+
+These catalogues are free, practical and fast-moving. Standards move slower but carry audit weight. Most mature programmes use both.
+
+In practice, the catalogues earn their keep in testing. A red team can walk an agent through OWASP's agentic list and ATLAS's techniques one by one and write down what happened, which turns a vague worry into a list of findings with owners and dates.
+
+Which brings us to the centre of today's episode.
+
+ISO and IEC twenty-seven oh ninety, twenty twenty-six. Its full title is "Cybersecurity, Artificial intelligence, Addressing security threats and compromises to AI systems". It's a first edition, fifty-six pages, from the joint technical committee subcommittee that also looks after twenty-seven thousand and one. The project was approved in September twenty twenty-two, went through a committee draft in January twenty twenty-four, a draft international standard ballot in twenty twenty-five, and a final ballot that closed in August this year. Four years from start to finish, which is brisk by ISO standards and roughly three model generations by AI ones.
+
+Before going further, a plain statement about sources. The standard costs a little over two hundred Swiss francs and we have not read the full text. Everything here comes from ISO's public product page and its own explainer on twenty-seven oh ninety, which ISO says was based on the final draft. So treat what follows as ISO's description of its standard, not a reading of the clauses.
+
+What is it, according to ISO? Guidance on understanding, detecting and mitigating security threats specific to AI systems, across the whole life cycle, for organisations of any size that develop or use AI. Three things are worth pinning down. It is security guidance, not a management system with requirements, so you cannot be certified against it on its own. Its scope is AI broadly, not just generative AI or chatbots. And its focus is protecting AI systems, not using AI for defence.
+
+ISO describes the content in three areas.
+
+The first is applying established information security to AI: governance, zero trust, secure software engineering, supply chain, threat modelling and red teaming. Nothing exotic, and that is the point. Much of AI security is ordinary security applied with discipline to a new kind of system.
+
+The second area is the AI-specific threats, each described with its consequences, how to detect it and how to mitigate it. The list ISO gives is a useful checklist in itself. Data poisoning, where training data is tampered with. Model exfiltration, including through queries that look entirely legitimate. Evasion, where inputs are crafted to be misclassified. Membership inference, which reveals whether a particular record was in the training data. Model inversion, which reconstructs sensitive training data from the model. Direct poisoning of the model itself. Prompt injection. Sensitive information appearing in model output. And outputs that themselves carry injection attacks into whatever consumes them next. ISO also covers the provenance of systems and data.
+
+The third area is keeping protection in place over time. That includes how mitigations interact and sometimes conflict, logging and monitoring, protecting development environments, detecting malicious inputs, limiting how a model can be used, and the fact that both models and mitigations deteriorate. The underlying approach is defence in depth, and ISO is candid that some AI threats remain hard to detect.
+
+The point worth dwelling on is retraining. ISO highlights that data collected while a system is running, and later used to retrain it, can carry poisoning into future versions. For systems that learn continuously, today's operational inputs are tomorrow's training data. That turns every feedback button, every logged conversation and every user correction into a possible route for an attacker. The second point follows closely: access control alone is not enough where legitimate-looking queries, made patiently and at volume, can extract a model.
+
+To make that concrete, here's an illustration of our own, not one from the standard. Picture a customer service model that's retrained each quarter on conversations users marked as helpful. An attacker opens hundreds of ordinary-looking chats over a few months, each steering the model towards a particular wrong answer, perhaps a fake support phone number, and marks every one as helpful. Nothing in any single conversation looks malicious. No account is compromised. And yet, next quarter, the retrained model has learnt exactly what the attacker taught it. The defences here aren't exotic: know which data feeds retraining, filter and sample it, keep a trusted evaluation set the public can't touch, and compare each new version's behaviour against the last before you release it.
+
+Extraction works on a similar principle. Someone with a valid account sends a large number of carefully chosen queries and uses the answers to train a copy of your model, or to learn enough about it to attack it more precisely. Every request was authorised. That's why the defences are about rate limits, usage patterns and monitoring, not only about who holds a login.
+
+How does it fit with what you already have? It builds on twenty-seven thousand and one and twenty-seven thousand and two rather than replacing them. Forty-two oh oh one covers how an organisation manages AI. Twenty-seven oh ninety covers the threats to the AI systems themselves. Its normative references are the AI concepts and terminology standard, twenty-two nine eighty-nine, and the framework for machine learning systems, twenty-three oh fifty-three.
+
+It's also worth being clear about what twenty-seven oh ninety is not. It is not a test you can pass, and it won't tell you a particular product is safe. It's not a substitute for an AI management system, and it doesn't replace the regulation that applies to you. It's a structured, internationally agreed list of what can go wrong with AI systems and what to do about it, written in the same language your information security programme already speaks. For many organisations, that common language is the main benefit: it lets the security team, the auditors and the AI builders argue about the same list.
+
+Now our assessment, and since it's drawn from ISO's summaries rather than the text, take it as a considered judgement rather than a finding. Twenty-seven oh ninety gives auditors and procurement teams an international reference for AI-specific threats that organisations already certified to twenty-seven thousand and one can map into controls they already run. That's valuable. But from ISO's public material, it does not appear to set out agent-specific controls in any depth. For agents, OWASP's agentic list and the Australian Signals Directorate's guidance currently go further.
+
+And agents are where two practical points deserve emphasis.
+
+The first is about who changes an agent after it is approved. It helps to separate three things: the model, the agent built on top of it, and the agent makers, the people who build and modify agents. In many organisations, makers can change an agent after its security review. They connect a new tool. They attach a new knowledge source, perhaps a whole document library. They rewrite its instructions. Each change can be small and well-meant, and together they can shift the agent's security profile well away from what was approved. A model doesn't change on a Tuesday afternoon because someone in marketing found a new connector. An agent can. So treat agent configuration the way you treat cloud configuration. Baseline what was approved: the tools, the knowledge connections, the permissions and the instructions. Monitor for drift. Alert when any of them change, and send the agent back for review when they do.
+
+The second point is the one to underline. Prompt instructions are guidance, not a security control. A system prompt, or the instruction text an agent is given, shapes how the model behaves. It does not enforce anything. It can be overridden or simply ignored, and prompt injection exists precisely to do that. If an agent's only protection against deleting records is a sentence saying "never delete records", the protection is a polite request. Real controls sit outside the model: least privilege on the tools and data the agent can reach, approval gates for high-impact actions, enforcement in the harness that connects the model to everything else, and monitoring of what it actually does.
+
+A useful test when reviewing any agent: delete the instructions in your head, and ask what the agent could then do with the access it holds. Whatever the answer is, that's your real exposure, because on a bad day, with the right injected text, that's what the agent may do. This is exactly where OWASP's goal hijack entry lands, and it's the core of ASD's guidance on agent harnesses, which we'll come to in a moment. So when someone points to the system prompt as a control in a risk assessment, it should be recorded as guidance, and the actual control should be found somewhere else.
+
+Now to regulation, and the Australian angle.
+
+In Europe, the AI Act has been amended by what's known as the AI Omnibus regulation, in force since the twenty-seventh of July this year. Most of the Act's rules applied from the second of August twenty twenty-six, and obligations for general-purpose AI models have applied since August twenty twenty-five. But the obligations for high-risk systems have moved: to the second of December twenty twenty-seven for standalone high-risk uses, and to the second of August twenty twenty-eight for AI built into regulated products. The grace period for marking content from existing generative systems ends on the second of December this year. That matters for Australian firms selling into the European Union, and it's the reason harmonised standards, the ones that let you show conformity, matter so much there.
+
+Australia's approach remains voluntary and guidance-led. In October last year the National AI Centre's Guidance for AI Adoption replaced the earlier ten-guardrail Voluntary AI Safety Standard with six practices: decide who is accountable, understand impacts, measure and manage risks, share essential information, test and monitor, and maintain human control. It now covers developers as well as deployers.
+
+On agents, the Australian Signals Directorate's Australian Cyber Security Centre has been clear and conservative. In May it co-authored guidance on the careful adoption of agentic AI services with American, Canadian, New Zealand and British partners. The message: use agentic AI only for low-risk, non-sensitive tasks, never give it broad or unrestricted access, and fit it into your existing security model rather than building around it.
+
+Then in September ASD published guidance on agentic AI harnesses, which it calls the layer above the model. The harness is the software that connects a model to data, tools and systems, and ASD's argument is that it's the part organisations can most directly govern. The controls it sets out are least privilege, secure design, monitoring and audit logging, human oversight of high-impact actions, and clear accountability. If that list sounds familiar, it's because it's the same answer as the point about prompts a moment ago, arrived at from the other direction.
+
+The Australian takeaway: ASD's line on agents is clear, and standards like twenty-seven oh ninety and forty-two oh oh one are how you evidence it to a board or an auditor.
+
+So how does the whole stack fit together? One workable reading. Use forty-two oh oh one and the National AI Centre's six practices for governance. Use the NIST framework and twenty-three eight ninety-four for risk method. Layer twenty-seven oh ninety onto twenty-seven thousand and one and twenty-seven thousand and two for AI-specific threats. Use OWASP and ATLAS for engineering and testing. Use ASD's guidance for how far to trust agents in production. And apply the EU AI Act where it legally reaches you.
+
+Read them side by side and the same handful of ideas keeps coming back: know what you have, know where its data came from, give it the least access it needs, watch what it does, and keep a human in control of anything consequential. If four bodies on three continents independently arrive at the same five ideas, that's probably the to-do list.
+
+So, what should defenders and leaders actually do? Eight things.
+
+One. Build an AI inventory, including third-party and embedded AI, and every agent with tool access. ISO puts this first, and the National AI Centre publishes an AI register template that helps.
+
+Two. Map where your training and retraining data come from, and who can change it. Treat every feedback loop as a possible poisoning path.
+
+Three. Put agents behind least privilege and explicit approval points for high-impact actions. Govern the harness, not just the model.
+
+Four. Don't count system prompts or instruction text as security controls. Make sure every risk an agent's instructions address is also covered by something enforced outside the model.
+
+Five. Monitor agent configuration for drift. Baseline the approved tools, knowledge sources, permissions and instructions, alert on change, and re-review when they change.
+
+Six. Monitor for suspicious use, including high-volume or patterned queries that could indicate someone extracting a model, and decide in advance who responds.
+
+Seven. Red-team against OWASP's agentic list and ATLAS techniques before you widen any agent's autonomy.
+
+And eight. If you hold twenty-seven thousand and one, plan a gap review against twenty-seven oh ninety once you have the text. If you're working towards forty-two oh oh one, use twenty-seven oh ninety for the security component. For products sold into Europe, note the second of December this year for content marking, and December twenty twenty-seven for high-risk obligations.
+
+That's the Sunday Special. Every framework, standard and guidance document we mentioned is linked in the show notes, so you can go to the source rather than take our word for it. The daily brief is back tomorrow morning with a recap of the weekend. Until then, enjoy your Sunday, and perhaps check what your agents were connected to on Friday.
