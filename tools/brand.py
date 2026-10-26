@@ -1,7 +1,10 @@
 # Single source of truth for show branding (imported by build_site.py, x/make_post.py, x/make_banner.py, make_brand_assets.py)
-SHOW = "U51 Cyber and AI Security Pod"
+SHOW = "U51 Cyber and AI Security Botcast"
 SHORT = "U51"
 SUBTITLE = "The daily cyber and AI threat brief, from Melbourne"
+# Show description (feed channel description, itunes:summary, homepage hero, meta/og descriptions). Factual, no names, no em dashes. Set 27 Oct 2026.
+DESCRIPTION = "A daily cybersecurity and AI security briefing with an Australian focus. AI agents research, write and voice it under human editorial direction. Sources are linked in the show notes at u51.org. Not-for-profit."
+FEED_SUBTITLE = "Daily cyber and AI security briefing with an Australian focus, by AI agents under human editorial direction"   # itunes:subtitle
 X_HANDLE = "u51cyber"
 X_URL = "https://x.com/u51cyber"
 BASE = "https://u51.org"   # custom domain since 19 Oct 2026. The old feed https://ajith-at.github.io/cyber-daily-australia/feed.xml 301-redirects here (Spotify is subscribed to it): never rename the repo or remove the CNAME file

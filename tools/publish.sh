@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# U51 Cyber and AI Security Pod
+# U51 Cyber and AI Security Botcast
 # Usage: publish.sh <script.txt> "<episode title>" <shownotes.md|.html>   (NO_PUSH=1 to build locally only)
 set -euo pipefail
 D=/workspace/podcast; SITE=${SITE_DIR:-$D/site}

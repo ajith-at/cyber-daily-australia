@@ -11,9 +11,7 @@ site = sys.argv[1] if len(sys.argv) > 1 else "/workspace/podcast/site"
 base = os.environ.get("BASE_URL", B.BASE); e = html.escape
 ASSETS_SRC = os.environ.get("ASSETS_SRC", "/workspace/podcast/assets_src")
 LATEST_N = 8    # full episode cards on the homepage; older episodes go to the Archive (grouped by month)
-DESC = (f"{B.SHOW}: {B.SUBTITLE[0].lower() + B.SUBTITLE[1:]}. A short daily executive briefing on the cyber threats, "
-        f"vulnerabilities and AI security developments that matter, with an Australian lens. Open sources only. "
-        f"Follow on X: @{B.X_HANDLE} ({B.X_URL})")
+DESC = f"{B.DESCRIPTION} Follow on X: @{B.X_HANDLE} ({B.X_URL})"   # feed channel description and itunes:summary
 FOOT = f'<a href="{B.X_URL}">Follow on X (@{B.X_HANDLE})</a>'
 LOGO = "img/u51-logo-600.jpg"; LOGO_SM = "img/u51-logo-160.jpg"; OG = f"{base}/img/u51-og-1200.jpg"
 def head(title, desc, url, rel):
@@ -117,7 +115,7 @@ def shell(*, title, rel, active, desc, url, toolbar, body, chips_extra=(), cal_c
         f"<script src='{rel}assets/episodes.js' defer></script><script src='{rel}assets/calendar.js' defer></script></head>\n<body>"
         "<a class=skip href='#content'>Skip to content</a><div class=shell>"
         f"<aside class=rail aria-label='Site'>"
-        f"<a class=wordmark href='{rel}index.html'><img src='{rel}{LOGO_SM}' alt='' width=160 height=160><span><strong>{B.SHORT}</strong><small>Cyber and AI Security Pod</small></span></a>"
+        f"<a class=wordmark href='{rel}index.html'><img src='{rel}{LOGO_SM}' alt='' width=160 height=160><span><strong>{B.SHORT}</strong><small>{e(B.SHOW[len(B.SHORT):].strip())}</small></span></a>"
         f"<nav aria-label='Main'><ul class=nav>{rail_nav}</ul></nav>"
         f"<nav aria-label='Listen'><p class=nav-label>Listen</p><ul class=nav>{listen_nav}</ul></nav>"
         f"<section class='cal cal-rail js-only' data-cal data-root='{rel}' data-current='{cal_current}' aria-label='Episode calendar'></section>"
@@ -128,7 +126,7 @@ def shell(*, title, rel, active, desc, url, toolbar, body, chips_extra=(), cal_c
         f"<div class=toolbar-title>{toolbar}</div>{switch_compact}</div>"
         f"<nav class=chips aria-label='Sections'>{chips}</nav></header>"
         f"<div class=content id=content tabindex=-1>{body}"
-        f"<footer class=site-foot>{B.SHOW}. {B.SUBTITLE}. Not for profit, open sources only. "
+        f"<footer class=site-foot>{B.SHOW}. Researched, written and voiced by AI agents under human editorial direction. Not for profit, open sources only. "
         f"<a href='{rel}feed.xml'>RSS</a> · <a href='{B.X_URL}'>@{B.X_HANDLE}</a></footer>"
         "</div></main></div></body></html>\n")
 
@@ -163,7 +161,7 @@ for x in eps:
 """
 # NB: guid prefix "cyber-daily-australia-" is intentionally unchanged so podcast apps don't see old episodes as new.
 t = open("/workspace/podcast/feed_template.xml").read()
-for k, v in {"SHOW_TITLE": e(B.SHOW), "SITE_URL": base, "DESCRIPTION": e(DESC), "SUBTITLE": e(B.SUBTITLE),
+for k, v in {"SHOW_TITLE": e(B.SHOW), "SITE_URL": base, "DESCRIPTION": e(DESC), "SUBTITLE": e(B.FEED_SUBTITLE),
              "KEYWORDS": e(B.KEYWORDS), "OWNER_EMAIL": B.OWNER_EMAIL, "COVER": B.COVER}.items():
     t = t.replace("{{" + k + "}}", v)
 t = t.replace("  <!-- ITEMS -->\n", items)
@@ -200,7 +198,7 @@ for x in eps:
             f"<div class=player><audio controls preload=metadata src='{x['slug']}.mp3'></audio></div>"
             + listen_row("../", extra=False, small=True) + "</section>"
             f"<article class='card notes'><!--u51notes-->{x['notes']}<!--/u51notes--></article>")
-    page = shell(title=x["title"], rel="../", active="episodes", desc=f"{B.SHOW}: {B.SUBTITLE}.", url=f"{base}/episodes/{x['slug']}.html",
+    page = shell(title=x["title"], rel="../", active="episodes", desc=B.DESCRIPTION, url=f"{base}/episodes/{x['slug']}.html",
                  toolbar=f"<p class=h1>Episodes</p><p class=caption>{label}</p>", body=body, cal_current=when(x).strftime("%Y-%m-%d"))
     write_if_changed(f"{site}/episodes/{x['slug']}.html", page)
 
@@ -240,8 +238,7 @@ if older:
 BW = getattr(B, "BANNER_WIDE", None) or {"src": "img/u51-banner-1500.jpg", "srcset": "img/u51-banner-1500.jpg 1500w", "w": 1500, "h": 500}
 hero = (f"<section class='card hero'><img class=hero-banner src='{BW['src']}' srcset='{BW['srcset']}' sizes='(max-width: 860px) 100vw, min(1150px, 80vw)' alt='{B.SHORT} banner' width={BW['w']} height={BW['h']}>"
         f"<div class=hero-body><img class=hero-logo src='{LOGO}' alt='{e(B.SHOW)} logo' width=200 height=200>"
-        f"<div class=hero-text><h2>{B.SHOW}</h2><p>{B.SUBTITLE}. A short daily executive briefing on the cyber threats, vulnerabilities "
-        f"and AI security developments that matter, with an Australian lens. Open sources only.</p>"
+        f"<div class=hero-text><h2>{B.SHOW}</h2><p>{e(B.DESCRIPTION)}</p>"
         + listen_row("", extra=True) + "</div></div></section>")
 body = (hero + feature +
         f"<div class=section-head id=episodes><h2>Episodes</h2><span class=caption>Latest {len(latest)}, newest first</span></div>"
@@ -249,6 +246,6 @@ body = (hero + feature +
         "<section class='card cal-card js-only' id=calendar aria-labelledby=cal-title><h2 id=cal-title>Browse by date</h2>"
         "<div class=cal data-cal data-root='' aria-label='Episode calendar'></div></section>" + archive)
 extra_nav = [("archive", "Archive", "#archive", "archive")] if older else []
-write_if_changed(f"{site}/index.html", shell(title=B.SHOW, rel="", active="episodes", desc=f"{B.SHOW}: {B.SUBTITLE}.", url=f"{base}/",
+write_if_changed(f"{site}/index.html", shell(title=B.SHOW, rel="", active="episodes", desc=B.DESCRIPTION, url=f"{base}/",
      toolbar="<h1>Episodes</h1><p class=caption>Latest episodes</p>", body=body, chips_extra=extra_nav))
 print(f"built feed.xml ({len(eps)} episodes), index.html ({len(latest)} cards, {len(older)} archived) and {sum(1 for x in eps if x.get('notes'))} notes pages")

@@ -99,8 +99,8 @@ def render(date, title, num, T=DARK, report=None):
     check("U51 mark: U5", bb, WHITE_, bgs_under(bb), True); check("U51 mark: 1", bb, BLUE_, bgs_under(bb), True)
     sf = font(96, 800, "Montserrat/Montserrat-VariableFont_wght.ttf")
     sy = bb[3] + 40; x = X0
-    sbb = d.textbbox((X0, sy), "CYBER AND AI SECURITY POD", font=sf)
-    for part, col in (("CYBER ", T["show"]), ("AND AI", BLUE_), (" SECURITY POD", T["show"])):
+    sbb = d.textbbox((X0, sy), "CYBER AND AI SECURITY BOTCAST", font=sf)
+    for part, col in (("CYBER ", T["show"]), ("AND AI", BLUE_), (" SECURITY BOTCAST", T["show"])):
         d.text((x, sy), part, font=sf, fill=col); x += d.textlength(part, font=sf)
     check("show line", sbb, T["show"], bgs_under(sbb), False); check("show line: AND AI", sbb, BLUE_, bgs_under(sbb), False)
     # SUNDAY SPECIAL pill

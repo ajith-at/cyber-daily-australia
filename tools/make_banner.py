@@ -2,7 +2,7 @@
 import os, sys
 if os.environ.get("FORCE_OLD_GENERATED_ART") != "1":
     sys.exit("RETIRED: the brand now uses the owner-supplied U51 artwork in /workspace/podcast/brand_src. Run x/make_brand_assets.py instead. (Set FORCE_OLD_GENERATED_ART=1 only to reproduce the old placeholder art.)")
-# Generates the 1500x500 X banner for U51 Cyber and AI Security Pod (@u51cyber) in the cover style (navy, cyan, DejaVu Sans).
+# Generates the 1500x500 X banner for U51 Cyber and AI Security Botcast (@u51cyber) in the cover style (navy, cyan, DejaVu Sans).
 from PIL import Image, ImageDraw, ImageFont
 import random, math
 S=2; W,H=1500*S,500*S

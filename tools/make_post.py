@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write a ready-to-paste X post for an episode of U51 Cyber and AI Security Pod (@u51cyber).
+"""Write a ready-to-paste X post for an episode of U51 Cyber and AI Security Botcast (@u51cyber).
 Usage: x/make_post.py <episode-stem> ["optional custom headline sentence"]   (or set X_HEADLINE; SITE_DIR, X_TAGS optional)
 Reads site/episodes/<stem>.json, writes x/<stem>.txt and prints it.
 Rules: <=280 chars both raw and X-weighted (URLs count 23), no em/en dashes, 1-2 hashtags."""

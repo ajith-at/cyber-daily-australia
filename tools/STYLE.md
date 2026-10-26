@@ -1,11 +1,12 @@
-# U51 Cyber and AI Security Pod: podcast style rules
+# U51 Cyber and AI Security Botcast: podcast style rules
 
 ## Name and brand (rebranded 19 Oct 2026)
-- Full name: "U51 Cyber and AI Security Pod". Short form in scripts and posts: "U51" (say it as "U fifty-one"; write "U51"). X: @u51cyber, https://x.com/u51cyber.
-- Branding values (name, handle, subtitle, cover filename, keywords) live in `/workspace/podcast/brand.py`; publish.sh, build_site.py, x/make_post.py, and x/make_brand_assets.py read from it.
-- Site and feed: https://u51.org/ and https://u51.org/feed.xml (custom domain on GitHub Pages since 19 Oct 2026, HTTPS enforced). Spotify is still subscribed to the old https://ajith-at.github.io/cyber-daily-australia/feed.xml, which 301-redirects to u51.org, so never rename the repo, never delete `site/CNAME` (it holds `u51.org`), and never change the item guid prefix `cyber-daily-australia-`. BASE lives in brand.py (`https://u51.org`). Use u51.org links in notes, posts and Notion.
+- Full name (from 27 Oct 2026): "U51 Cyber and AI Security Botcast". Short form in scripts and posts: "U51" (say it as "U fifty-one"; write "U51"). X: @u51cyber, https://x.com/u51cyber.
+- Show description: `DESCRIPTION` in brand.py (feed channel description and itunes:summary, homepage hero, meta and og descriptions). It says the show is researched, written and voiced by AI agents under human editorial direction. Keep it factual, no names, no em dashes.
+- Branding values (name, handle, subtitle, description, cover filename, keywords) live in `/workspace/podcast/brand.py`; publish.sh, build_site.py, x/make_post.py, and x/make_brand_assets.py read from it.
+- Site and feed: https://u51.org/ and https://u51.org/feed.xml (custom domain on GitHub Pages since 19 Oct 2026, HTTPS enforced). Spotify is still subscribed to the old https://ajith-at.github.io/cyber-daily-australia/feed.xml, which 301-redirects to u51.org, so never rename the repo, never delete `site/CNAME` (it holds `u51.org`), and never change the item guid prefix `cyber-daily-australia-`. BASE lives in brand.py (`https://u51.org`). Use u51.org links in notes and posts.
 - Artwork: the owner-supplied U51 graphics in `/workspace/podcast/brand_src/` (u51_cover_src.png, u51_banner_src.png) are the brand. Do not generate or redraw brand art. `python3 x/make_brand_assets.py` builds everything from them: site/cover-u51-v2.jpg and site/cover.jpg (3000x3000 podcast cover), x_banner.png (1500x500), x_avatar.png (400x400), and the web copies in site/img (600px logo, banner strip, 1200px og image, favicons). If the art changes, bump `COVER` in brand.py to a new filename so podcast apps refresh. x/make_cover.py and x/make_banner.py are retired (they exit unless forced); publish.sh does not call any image script.
-- Note: the artwork reads "U51 Cyber and AI Podcast" while the feed title is "U51 Cyber and AI Security Pod". Keep the feed title as is unless told otherwise.
+- Note: the cover and X artwork still read "U51 Cyber and AI Podcast" (not regenerated after the 27 Oct 2026 rename to "U51 Cyber and AI Security Botcast"). The feed title, site and Sunday Special thumbnails use the full name. Leave the artwork until the owner supplies new art.
 - Website: build_site.py adds the banner strip and logo to index.html, a small logo header to every notes page, plus favicon and og:image tags. Do not hand-edit these.
 - Listen buttons: APPLE_URL, POCKETCASTS_URL and SPOTIFY_URL in brand.py drive the button row on index.html and the compact row in each notes-page header. A platform set to None is hidden. Spotify is not confirmed yet: when the owner supplies the open.spotify.com/show/<id> link, set SPOTIFY_URL, run `python3 build_site.py` and push. Never guess an ID.
 - Never mention the owner's name in any script, notes, feed, site or post. Owner email in the feed stays troy4claude@gmail.com.
@@ -14,11 +15,12 @@
 ## Script
 - Length: 1,500 to 2,200 words (10 to 15 min), scaled to how significant the day's news is.
 - Intro: one or two sentences only: a Melbourne greeting, the show name "U51", the date, and the reporting window (Melbourne time). Then go straight into the first story. No show preamble or running order.
+  - Name in scripts: "U51" is the default in the intro and sign-off. Whenever the full name is spoken (intro, sign-off or a plug), say "U51 Cyber and AI Security Botcast", never the older "Pod" form.
   - Model: "Hello from Melbourne, Australia, this is U51, your cyber and AI security brief for Tuesday the 20th of October, covering the 24 hours to 7 am." Vary the wording every day, for example: "Good morning from Melbourne. You're listening to U51, the cyber and AI security brief for ...", "From Melbourne, this is U51 with your cyber and AI threat brief for ...", "Hello from a [weather] Melbourne, it's U51, your security brief for ...". Never reuse the previous episode's exact opening.
 - Australian English, spoken style, neutral executive tone. Expand acronyms on first use; say CVE numbers sparingly and spell them out.
 - No URLs and no IoC strings (point listeners to the show notes instead). Invent nothing beyond the day's SITREP.
 - Confidence: never say "confidence is high", and don't flag high-confidence items at all. Flag only moderate or low items, in varied natural phrasing, for example: "this rests on a single report", "not yet independently verified", "details are still emerging", "treat this as a lead only", "the figures are self-reported". Don't repeat the same phrasing within an episode.
-- Order: headlines → Australian focus (say plainly if there is no significant Australia-specific activity) → global threats → AI security → industry → outlook and patch priorities → a short sign-off.
+- Order: headlines → Australian focus (say plainly if there is no significant Australia-specific activity) → global threats → AI security → industry → outlook and patch priorities → a short sign-off (if it names the show in full, use "U51 Cyber and AI Security Botcast").
 
 ## Show notes (required, 3rd argument to publish.sh)
 - An HTML fragment (or simple markdown) listing every story covered: a bold title, a one-line summary and the source link(s) from the SITREP. Group by section. Items with no link may be listed without one.
@@ -33,12 +35,6 @@
 ## Character
 - A little dry, understated humour and personality is welcome, e.g. a wry aside about a vendor's patch cadence or a well-placed observation. At most two or three light touches per episode, never at victims' expense, never undermining seriousness on critical items.
 - Never repeat the same joke, phrase, sign-off or aside across episodes; vary openings, transitions and closings daily.
-
-## Notion show-notes archive (do this after every publish)
-The box has no Notion credentials, so the daily routine must do this step through the user-Notion MCP connector:
-1. Run `/workspace/podcast/notion/prep_notion_page.sh <episode-stem>` (e.g. 2026-10-18-0647). It prints the episode title and writes `/workspace/podcast/notion/<stem>.md` (episode date, MP3 URL, notes-page URL, full show notes with links).
-2. Call `notion-create-pages` with parent `{"page_id": "3fb48c8e1a2f81449abfdc1ac14526ce"}` (parent page "U51 Cyber and AI Security Pod: Show Notes", https://app.notion.com/p/3fb48c8e1a2f81449abfdc1ac14526ce, in the Agentspace teamspace), title = printed title (no em dashes), content = `$file:/workspace/podcast/notion/<stem>.md`.
-3. Don't create duplicates: search the parent's children for the title first. Notion pages are kept even after the 90-day MP3 cleanup.
 
 ## Weekly and continuity rules (added 18 Oct 2026)
 - Monday episodes: after the intro, give a brief recap of significant weekend activity and the stories covered in the Saturday and Sunday editions (read previous scripts/notes in /workspace/podcast/site/episodes and ep*.txt), for listeners who skip weekends.
