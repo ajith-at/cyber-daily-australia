@@ -26,7 +26,7 @@
 - An HTML fragment (or simple markdown) listing every story covered: a bold title, a one-line summary and the source link(s) from the SITREP. Group by section. Items with no link may be listed without one.
 
 ## Audio
-- Voice en-AU-WilliamMultilingualNeural, rate -10% (slowed from -5% at Ajith's request, 24 Oct 2026), loudness normalised to -16 LUFS, mono 96 kbps.
+- Voice en-AU-WilliamMultilingualNeural, rate -5%, loudness normalised to -16 LUFS, mono 96 kbps.
 
 ## Titles and descriptions (Spotify)
 - Episode titles: never use an em dash or en dash. Format: "Episode N: <headline topics>, <D Month YYYY>" (e.g. "Episode 2: Ivanti patch deadline and AI key theft, 17 October 2026").
@@ -54,9 +54,6 @@
 ## Sunday Special (from 25 Oct 2026)
 - Every Sunday episode is a "Sunday Special": a deep dive into one relevant topic instead of the usual news run. No news segment by default. Only if there is a burning high-severity or extraordinary high-profile incident in the past 24 hours, open with a brief (under 2 minutes) verified mention of it, then the deep dive. Target 20 to 25 minutes in total.
 - Title format: "Sunday Special: <topic>, D Month YYYY" (still counts as the next episode number in the feed: "Episode N, Sunday Special: <topic>, D Month YYYY").
-- Planning cycle: Thursday evening, five candidate topics go to Ajith for selection; Saturday, a draft text outline goes to him for review; Sunday morning, the episode is produced from the approved outline (with his feedback applied). Files live in /workspace/podcast/specials/<Sunday date YYYY-MM-DD>/ (topic.md, outline.md).
+- Planning cycle: Thursday evening, five candidate topics go to the owner for selection; Saturday, a draft text outline goes to him for review; Sunday morning, the episode is produced from the approved outline (with his feedback applied). Files live in /workspace/podcast/specials/<Sunday date YYYY-MM-DD>/ (topic.md, outline.md).
 - Deep dives explain frameworks and standards accurately from primary sources (standard bodies, NIST, regulators). Never quote or paraphrase clauses of a paywalled standard you haven't read; rely on the publisher's public summaries and say so where relevant.
 - The written daily SITREP still runs on Sundays as normal. Monday's weekend recap covers Saturday's episode, the Sunday Special, and any significant news from Sunday that the Special didn't cover.
-
-## Monday episodes: plug the Sunday Special (standing rule, Ajith 25 Oct 2026)
-Every Monday episode includes a short plug of the previous day's Sunday Special (about 30 to 45 seconds, after the intro or within the weekend recap): name the episode and topic, give 2 or 3 key takeaways drawn from its published script or show notes in /workspace/podcast/specials/<Sunday date>/ and the episode page, and point listeners to it on u51.org. Link the Special's notes page in the Monday show notes.
