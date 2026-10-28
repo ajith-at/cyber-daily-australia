@@ -94,7 +94,8 @@ def shell(*, title, rel, active, desc, url, toolbar, body, chips_extra=(), cal_c
         act = " active" if k == active else ""
         tgt = " target='_blank' rel='noopener'" if ext else ""
         return f"<a class='{cls}{act}' href='{h}'{a}{tgt}>{icon(i)}<span>{n}</span></a>"
-    rail_nav = "".join(f"<li>{item(*n, 'nav-item')}</li>" for n in nav)
+    RAIL_SKIP = {"archive", "feed", "x"}   # kept out of the sidebar so it fits without scrolling; still in the mobile chips and the footer
+    rail_nav = "".join(f"<li>{item(*n, 'nav-item')}</li>" for n in nav if n[0] not in RAIL_SKIP)
     listen_nav = "".join(f"<li><a class='nav-item' href='{u}' target='_blank' rel='noopener'>{icon(i)}<span>{n}</span></a></li>" for n, u, i in LISTEN)
     cal_href = "#calendar" if rel == "" else f"{rel}index.html#calendar"
     chips = "".join(item(*n, "chip") for n in nav[:1]) + f"<a class='chip js-only' href='{cal_href}'>{icon('calendar', 16)}<span>Calendar</span></a>" + "".join(item(*n, "chip") for n in nav[1:]) + "".join(f"<a class='chip' href='{u}' target='_blank' rel='noopener'>{icon(i, 16)}<span>{n}</span></a>" for n, u, i in LISTEN)
