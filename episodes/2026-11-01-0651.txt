@@ -1,0 +1,95 @@
+Good morning from Melbourne on the first Sunday of November. This is the U51 Sunday Special for the first of November, twenty twenty-six, and today there is no news run, just one report, read closely.
+
+The report is the Australian Signals Directorate's Annual Cyber Threat Report for twenty twenty-five to twenty-six, released this week. It is the seventh of these reports, and it comes from the Australian Signals Directorate, or ASD, and its Australian Cyber Security Centre, the ACSC. This year's edition calls artificial intelligence "the defining force" in the threat landscape. That sounds like the opening of a hype cycle. But the line that matters most in the foreword is a calmer one. In ASD's words, AI "has not introduced new cyber threats", but it has "amplified and sped up existing ones".
+
+That sentence is a good way into the whole report. So rather than walk through it page by page, we've pulled out five things to take away, and we'll finish on what to do about them.
+
+One housekeeping note before we start. ASD changed how it categorises incidents this year, so some comparisons with last year's report are approximate rather than like for like. Where that matters, we'll say so.
+
+Message one. AI speeds up familiar attacks, so patching has to happen in days.
+
+Start with the framing. ASD isn't describing a new class of attack built by machines. It's describing the attacks defenders already know, phishing, stolen credentials, exploitation of known flaws, happening faster and at greater scale because attackers have better tools.
+
+Speed is where this bites. ASD has previously observed that most exploitation of a vulnerability happens within two weeks of a fix or mitigation advice being released. Some of it happens within forty-eight hours. It's worth being precise about that clock. It starts when the patch or the mitigation advice comes out, not when the flaw is first disclosed. In other words, a published fix also shows attackers where the weakness is, and some of them act on it within two days. ASD expects AI to compress that window further over the coming year.
+
+Old flaws also still work. The report notes that a vulnerability dating from twenty oh eight was successfully exploited this year. That's a flaw older than some of the people now patching it. A patch program that only chases this month's advisories leaves the back catalogue open, and attackers are happy to browse it.
+
+The foreword also mentions, briefly, that recent weeks have brought new threats from what it calls "the unintended actions of AI agents and model testing". The report gives no further detail on that, so neither will we. It also describes a case from twenty twenty-five in which a US-based AI company disrupted a cybercriminal group, without naming the company.
+
+So what does AI on offence actually look like right now? This is the part of the story where claims and evidence tend to get blurred, so it helps to take four recent cases and, for each, separate what's confirmed from what someone claims.
+
+The first is lab work, not an attack. Anthropic says one of its unreleased internal models found a set of browser and operating system flaws and chained them into working exploits with, in its words, "little human involvement". What's confirmed is that the flaws were real and have been patched: Google and Apple both credit Anthropic researchers, working with Claude, for specific fixes. What rests on Anthropic's own account is how much of the work the model did, because the company hasn't published a step-by-step breakdown of what its people did along the way. And none of these exploits was seen in a real attack.
+
+The second is a real intrusion. The security firm Dream reported a campaign that chained a flaw known as PHP2Shell with a Linux kernel bug to take full control of servers in the United States, Japan, Taiwan and South Korea, including systems in a US government-affiliated environment, before moving on to Active Directory. The intrusions are real. The AI part is Dream's assessment: it found Claude Code installed on the attackers' infrastructure, along with an AI scanning tool configured to use the Chinese models DeepSeek and Kimi, and it judged the attackers' scripts to look AI-assisted. Dream itself says it has "no direct evidence" that AI wrote the exploit, and that this wasn't a fully autonomous attack. What we have, then, is people running an intrusion with AI tools on the bench, not a machine running it for them.
+
+The third is a police case in South Korea. Seoul police allege that a group led by a former penetration tester breached a large number of organisations and demanded ransoms, and that the leader used an AI penetration testing framework called ARTEX in most of the attacks. The leader is in custody and has been referred to prosecutors. Those are police statements, reported by the Yonhap news agency, and the case hasn't been tested in court.
+
+The fourth is a vendor disclosure. Warp, which makes an AI-enabled terminal for developers, confirmed that agent logs and user telemetry were exposed through a third-party vendor, affecting a small share of its users, and that it has brought in CrowdStrike. The company's chief executive described the attackers as using an "agent swarm". That description is his account alone, and no technical detail has been published to support it.
+
+Across all four cases, people chose the targets, held the access and decided what to do with it. The AI tools sat inside that workflow, writing scripts, scanning, or working through known weaknesses faster. Where tools caused harm, it was because they were given access and credentials to act with. That matches the report's framing almost exactly. The risk isn't a science-fiction attack. It's familiar attacks, faster and at scale. So patch in days, not weeks, and don't forget the old flaws.
+
+Message two. Attackers log in rather than break in.
+
+One of the section headings in the report says it plainly: "Attackers steal access, not just data." Stolen credentials and stolen access are among the main ways attackers get in. For critical infrastructure in particular, phishing and the use of valid accounts are the top two ways in that ASD sees. Not exotic zero-days. Someone's real username and password, obtained by a convincing email or bought from a criminal market.
+
+Part of the reason is human habit. The report quotes research from the government's Act Now. Stay Secure. campaign finding that more than half of people reuse passwords. Once one of those passwords leaks from any service, every other account that shares it is exposed. Attackers know this, and testing leaked passwords against business logins is cheap, automated work.
+
+This isn't only a criminal pattern. The report names actors linked to China, Russia and North Korea as having targeted Australia or its allies, without naming specific groups, and we'll follow its lead on that. It describes China-linked actors moving to large covert networks of hacked home and small-office routers and smart devices, networks shared by several actors at once, which lets their traffic blend in with ordinary internet users. That draws on a joint advisory ASD and its partners published in April. The report also says state actors in the Indo-Pacific are "possibly" pre-positioning in networks for a future crisis or conflict. That "possibly" is ASD's word, and it's an important one: it's an assessment of intent, not a confirmed plan.
+
+There's colour around the edges too. Pro-Russia hacktivists reached operational technology, the systems that control physical equipment, through remote-desktop connections left exposed on the internet. An Iranian group claimed a hack of the US medical technology company Stryker, which for Australia was a supply-chain exposure rather than a direct attack. And in November last year Australia sanctioned Media Land, a Russian hosting provider accused of supporting ransomware operations.
+
+The report's summary of all this is that the line between state and criminal activity "continues to blur". State actors use criminal tools and infrastructure, criminals use techniques once reserved for states, and both prefer a working login over a noisy break-in. So identity controls deserve the first share of defensive effort, because that is how both groups would rather get in.
+
+Message three. Medium businesses are taking the biggest hit.
+
+Every year the report includes the average cost of a cybercrime, based on what businesses report to ASD. This year, those costs are rising overall, but the rise isn't spread evenly. Medium businesses saw the sharpest increase. Their average reported cost is up almost half on last year, and it's now close to the average cost for large businesses.
+
+A caveat belongs right next to that number. These are self-reported averages from people who chose to report, so they show a trend rather than the full picture. A business that never reports, or never realises it was hit, isn't in the figures.
+
+The other size bands moved differently. Small-business costs were roughly flat. Large-business costs fell. The report doesn't explain why large businesses did better this year. Our reading, and it is only our reading, not ASD's, is that larger organisations tend to have more mature defences, dedicated security staff and incident response arrangements already in place, which may limit the damage when something does go wrong.
+
+Whatever the cause, the practical point is clear enough. Medium businesses are big enough to be worth an attacker's time, with real revenue, real data and real supply-chain connections, but they often lack the security teams and budgets of large enterprises. That gap is where the cost is landing. If you run or advise a business in that middle band, this is the year to treat cyber security as an operating risk with a budget line, not an IT side project.
+
+The detailed cost tables, for every business size and for individuals, are in the show notes for anyone who wants the figures.
+
+Message four. Incidents are up, and ASD is seeing more serious ones.
+
+ASD responded to more incidents this year than last, and it is seeing more of the serious kind, the extensive compromises and the incidents that cause real disruption. We'll repeat the caveat from the start, because it applies most here. ASD changed its incident categories this year, so a direct category-by-category comparison with last year isn't like for like. The direction is clear. The precise size of the change is harder to pin down, which is why the counts are in the show notes rather than read out here.
+
+One factual line from the report on ASD's own work: in some cases, ASD notified organisations that they had been compromised before the organisations knew it themselves. That's a useful reminder that a lack of alerts on your own network isn't proof that nothing has happened.
+
+And one item from outside the report. In interviews with the ABC this week, ASD revealed that it had disrupted an Amadey botnet, a network of infected computers used to steal data and deliver further malware. Security researchers track dozens of Amadey botnets, so this was one of many, and disrupting it doesn't undo data that was already stolen. ASD didn't say when the operation took place.
+
+A short word on critical infrastructure, the energy, water, health and financial services that Australians rely on every day. The report calls it an attractive target. Criminals see it as a promising target for extortion because of the sensitive data it holds and how critical its services are. State-sponsored actors, in ASD's words, "routinely target" these networks, possibly for espionage, or to pre-position so they could disrupt operational technology in a crisis or conflict. Financial and insurance services, public administration, and the utilities reported the most incidents. The hacktivist case from message two is what that risk looks like in practice: control systems reachable through remote access left open to the internet. The Stryker claim shows the other path, where Australian operators are exposed through a supplier without being the target themselves. ASD's guidance for operators is called CI Fortify. The critical infrastructure incident count dipped slightly on paper, but with the category changes that isn't a like-for-like comparison, so the figures are in the show notes.
+
+The takeaway from message four is simple. More incidents, and more serious ones, which is why the last message is the one that matters most.
+
+Message five. Assume breach, then do the basics.
+
+If AI makes familiar attacks faster, then it's sensible to plan as though an attacker may already be inside. That's exactly what ASD is asking for. In the report's words, the ACSC "is urging Australian industry to adopt the 'assumed breach' mindset", planning "for when, not if, a cyber compromise occurs".
+
+Assumed breach sounds like a philosophy, but in practice it comes down to two concrete things. First, turn on event logging, so that if someone is inside your network you can actually see what they're doing, and you can work out afterwards what they touched. Without logs, an investigation turns into guesswork. Second, have an incident response plan ready before you need it: who makes the calls, who you ring, how you keep the business running, and how you communicate with customers and regulators. Writing that plan for the first time during an incident goes badly.
+
+Then come the basics. None of these is new, which is rather the point. The report's message is that the fundamentals still decide most outcomes.
+
+First, turn on passkeys where you can, or multi-factor authentication, MFA, at the very least, and stop reusing passwords. Given that more than half of people reuse them, a password manager is one of the cheapest security improvements available to anyone.
+
+Second, patch in days, not weeks, and include the old flaws. Remember the forty-eight hour clock from message one. If your patch cycle is monthly, attackers have plenty of time to work with.
+
+Third, retire or isolate unsupported technology that faces the internet. A device that no longer gets security updates won't get safer with age, and edge devices like routers, firewalls and VPN gateways are exactly what state actors are building their covert networks from.
+
+Fourth, turn on event logging, as we said a moment ago. It appears in this list as well because it underpins nearly everything else.
+
+Fifth, ask your suppliers whether their products are secure by design, and start planning the move away from traditional public-key cryptography by the end of twenty thirty, ahead of quantum computers capable of breaking it. That deadline sounds distant, but cryptographic migrations in large organisations take years.
+
+And sixth, report cybercrime. You can do that at cyber dot gov dot au, or by calling one three hundred CYBER1, that's one three hundred, two nine two, three seven one. Those reports aren't just paperwork. They feed the tip-offs that let ASD find incidents and warn other victims.
+
+For security leaders, there's one more development worth knowing about. ASD says it is "evolving the Essential Eight into a modern, principles-based framework", which it's calling the Essentials series, introduced last month. It doesn't replace the Essential Eight. It's designed to be principles-based and threat-informed, and it's organised by technology environment, so that the advice for a cloud environment, say, can differ from the advice for a traditional on-premises network. If your organisation measures itself against the Essential Eight, expect that conversation to change over the next year.
+
+For operators of critical infrastructure, the report's emphasis follows directly from message two. Given that phishing and valid accounts are the top two ways in, the priority is passwordless authentication, "such as MFA or passkeys" in the report's words, and tight control over valid accounts: who has them, what they can reach, and whether dormant ones are still switched on.
+
+And for organisations adopting AI, which ties back to our earlier Sunday Special on AI assurance, the same basics apply to AI agents. Treat an agent and its tools under least privilege, so it can only reach what its task needs. Give it its own credentials rather than borrowed ones, and log what it does. An agent with broad access and no logging is just another unmanaged account, and as message two showed, accounts are where attackers prefer to start.
+
+To bring the five together. AI is making familiar attacks faster, not inventing new ones. Attackers would rather log in than break in. Medium businesses are carrying the sharpest rise in costs. Incidents are up, and ASD is seeing more serious ones. And the response is to assume a breach is possible, see it when it happens, and get the basics done properly, quickly.
+
+That's the Sunday Special for this week. Tomorrow U51 returns to the daily brief, and in the meantime the show notes carry every source and figure we've drawn on today, including the numbers we deliberately left out of the audio. Thanks for listening, and enjoy the rest of your Sunday.
