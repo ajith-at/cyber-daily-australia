@@ -1,0 +1,57 @@
+Good morning from Melbourne on Cup Day. This is U51, the cyber and AI security brief for Tuesday the 3rd of November, covering the 24 hours to a quarter to six this morning, Melbourne time.
+
+We start in Europe, where attackers spent Sunday night turning off supermarket freezers. More than a hundred and fifteen stores across Belgium, the Netherlands, Sweden, Luxembourg, Ireland and Estonia found their refrigeration systems had been tampered with remotely overnight into Monday, European time. Chains that have confirmed problems include Ahold Delhaize, Carrefour in Belgium, Coop and ICA in Sweden, Spar stores run by Colruyt, Intermarché and SuperValu in Ireland.
+
+The method was low-tech. Controllers were switched off, pushed into defrost cycles, or had their set points changed. One Swedish store manager told local television the temperature had been set to fifty degrees Celsius and could not be changed back. One Coop unit started generating heat. Ahold Delhaize alerted its store managers by text message around four in the morning, and some used refrigerated trucks to save stock.
+
+A refrigeration vendor serving several affected sites, Sabcobel, says the attacker used the same weakness exploited in attacks on French stores last month, and that some installations need physical changes, not just a software update. Its advice is to manage the units only over a secure connection. The French attacks involved internet-facing refrigeration controllers from Danfoss and from Copeland's Dixell range. It is not yet clear whether this weekend's incidents were one coordinated campaign, and no one has claimed them. The root-cause detail comes from the vendor's comments to the media, so treat it as provisional for now.
+
+Australian focus.
+
+That European story has a local angle. In mid-October, ASD's Australian Cyber Security Centre published an alert on protecting operational technology and edge devices, and it specifically named refrigeration and cooling systems. Retailers, cold-chain operators, food distributors and anyone running a coolroom should check this week that their refrigeration controllers can't be reached from the internet, and that remote access goes through a VPN with multi-factor authentication. If the installer set it up, ask the installer.
+
+And an update on the Amadeus breach we covered last Friday. Qantas has confirmed it was told by Amadeus of unauthorised access to one of its systems, which Amadeus says was contained in September. Qantas has notified the Australian Cyber Security Centre and is working to establish whether any Qantas bookings were affected. It says its own systems were not affected, and Amadeus says it has no evidence payment data was accessed. What it means for Qantas customers is still unknown. In the meantime, expect phishing that quotes real booking details, and confirm any request through the airline's own app or website.
+
+Global threats.
+
+Google has dismantled a botnet of more than one point three million Android TV boxes, and the unusual part is who built it. Google's Threat Intelligence Group says it is highly confident that the Shenzhen manufacturer Videostrong deliberately put a backdoor, called XCPE, into the firmware of its boxes, and then sold access to criminal affiliates. Those affiliates used the boxes for advertising fraud, to route other people's internet traffic through owners' home connections as a residential proxy, and to install more malware.
+
+The backdoor runs with system privileges, can switch off Google Play Protect and accepts shell commands. Google says it also took down the command servers used by more than a dozen related malware families, and Google estimates that cut off at least ten million more devices, reached through other channels, some of them not Android at all. Japan's National Police Agency and several security firms took part. Google has revoked Videostrong's Android TV licence and banned it from making certified devices.
+
+The takedown cuts off the operators, but the backdoor is still on the boxes and reinstalls itself if removed. The only fixes are clean firmware or unplugging the box. If you have a cheap, unbranded streaming box at home or plugged into a meeting room screen at work, it shouldn't stay on your network.
+
+Next, network storage. Synology has warned that ransomware called C3RB3R is encrypting data on its NAS devices running out-of-date versions of DiskStation Manager, the operating system. Victims find their files renamed with a "locked" extension and a ransom note asking them to buy a decryptor. Synology says a flaw patched in December 2024 is being exploited, while other researchers point to two critical flaws fixed this September, so which bug is in play hasn't been settled yet. The advice doesn't change either way: update DiskStation Manager, take the management page off the internet, and keep one backup the NAS itself can't write to. According to BleepingComputer, Synology's last attack warning was in August 2019, and this one follows a wave of reports from victims.
+
+Microsoft has published details of two intrusions that began with a Microsoft Teams call from someone posing as the company's own help desk. Staff were talked into opening Quick Assist, Windows' built-in remote help tool, and handing over control. From there, the attackers went after Active Directory Certificate Services, the part of Windows networks that issues login certificates. In one case, a badly configured certificate template let them request certificates for privileged accounts, and company data was later copied out. In the other, they tricked a domain controller into authenticating to them and relayed that to the certificate web enrolment service, coming away with a certificate for the domain controller itself.
+
+The detail defenders should note is that resetting a password or reimaging the first laptop does not revoke a certificate that has already been issued. If your organisation runs Certificate Services, audit your templates and web enrolment settings, and review whether outside Teams tenants can message and call your staff. No flaw in Teams itself was involved, and Microsoft hasn't tied the activity to a known group.
+
+A brief GitLab update. The Shadowserver Foundation counts more than a thousand internet-facing GitLab servers still open to the maximum-severity flaw that CISA listed as exploited last week, and more than eleven thousand open to a second critical flaw in the same regular-expression engine. Note that the earlier October fixes covered only the first bug. You need the releases from the twenty-first of October, version 19.5.1 or the matching backport, to close both. If you compile GitLab yourself or build custom images, you also need to upgrade Ruby, because the fix for the second flaw lives there.
+
+In cryptocurrency, the maintainers of BTCPay Server, the open-source payment processor, say hot wallets have been drained on instances running version 2.4.1 or earlier. Their advice is blunt: if you ran one of those versions, assume the server and wallet are compromised, move the funds to a new wallet and rebuild on 2.4.7, rather than simply updating in place.
+
+And Dream Research Labs reports that an Iran-linked group it calls DarkBlinders compromised a high-profile individual in Israel and a Kurdistan Region government cloud environment between August and October, using spear-phishing and trojanised tools. This rests on one firm's research.
+
+AI security.
+
+Cisco Talos has found a Windows infostealer called VOLTA that does something new with the data it takes. Beyond the usual passwords, cookies, cards and crypto wallets, it builds a profile of the victim, including employer, rough age and home location, and sends it to commercial language models through the OpenRouter service, asking how much the person is worth and how careful they are. It defaults to Anthropic's Claude Opus, and if a model refuses, the code falls back to Kimi or Google's Gemini. To be precise about who is doing what, the models are being called as paid services by the criminals' code; the triage logic, the fallback on refusal and the theft are all in the malware.
+
+Palo Alto Networks' Unit 42 describes an espionage cluster it calls CL-UNK-1211, which targeted government Linux servers from October last year to April, using web shells, a Go-based remote access tool called SysGoRAT, and a PHP setting that runs attacker code on every page load. Unit 42 thinks many of the scripts were written by a language model or an AI agent, judging by conversational comments left in the code and rapid switching between languages. That's an inference from the artefacts, not something the attackers admitted.
+
+And if your teams build AI agents with Langflow, the open-source workflow tool, patch now. IBM, which handles its security reports, lists two critical flaws that need no account: one bypasses authentication, the other runs code on the server. Every release from 1.0.0 to 1.12.8 is affected, and 1.13.0 is the only fix. A third flaw lets a low-privileged user get Langflow's built-in agentic assistant to generate component code that runs operating system commands. That is an over-trusted tool problem: the assistant's output was executed without adequate checks. Langflow has had other flaws listed as exploited this year, so assume these will be targeted soon.
+
+Industry.
+
+From iTnews: Microsoft quietly fixed a privilege escalation in the Windows 11 Get Help troubleshooter around the start of September, with no CVE and no advisory. A race in the Media Creation Tool troubleshooter, which runs under the system-level diagnostic service, let a standard user take full control of the machine. The fix was a one-line change to a PowerShell script. It's already on patched machines, but security teams tracking fixes by CVE number won't find it.
+
+Outlook and patch priorities.
+
+Critical: self-managed GitLab to the twenty-first of October releases; Synology DiskStation Manager updates with the management page off the internet; Langflow to 1.13.0; and refrigeration and building controllers off the public internet.
+
+High: audit Certificate Services templates and web enrolment, and tighten external Teams contact; rebuild BTCPay Server on 2.4.7; and remove uncertified Android TV boxes from networks you control.
+
+On deadlines, CISA's deadline for the Ivanti Connect Secure privilege escalation flaw passed yesterday, and the second Ivanti flaw is due on the thirteenth of November. Over the next day or two, watch for more European retail and cold-chain disclosures, clarity on which Synology flaw the ransomware uses, and airline-by-airline statements on Amadeus.
+
+Indicators for the botnet and the Linux espionage campaign are in the show notes.
+
+That's U51 for Cup Day. Whatever you back in the big race this afternoon, update the NAS first. Back tomorrow.
