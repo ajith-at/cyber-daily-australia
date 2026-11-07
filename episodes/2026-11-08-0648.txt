@@ -1,0 +1,111 @@
+Good morning from Melbourne on the second Sunday of November. This is the U51 Sunday Special for the eighth of November, twenty twenty-six, and after one live item from the news, the deep dive takes on one question: what happens to vulnerability management when AI finds bugs faster than organisations can fix them.
+
+Here are today's headlines. CISA has added an actively exploited SonicWall VPN flaw that can sidestep multi-factor authentication to its exploited vulnerabilities list. AI research pipelines are now producing working exploits at a scale, speed and cost that changes the maths for defenders. That puts pressure on alert-led response, monthly patch windows and human triage. And the answer is not to chase every bug equally, but to tighten containment, triage by risk and strengthen the process around the fix.
+
+First, one item from the news, because it's live and it's on the edge of many networks. SonicWall has patched a flaw in the SSL VPN service of its SonicOS firewalls, where a user with valid credentials for a different login method can get past SAML single sign-on checks, including the multi-factor authentication that SAML enforces. Only VPNs configured for SAML login are exposed. SonicWall says it investigated a report of potential exploitation, and CISA, the US Cybersecurity and Infrastructure Security Agency, added it to its Known Exploited Vulnerabilities catalogue on Friday, US time, with a federal deadline of the twentieth of November. Neither has shared details of the attacks. SonicWall lists no workaround, so the fix is the upgrade; the affected and fixed versions are in the show notes. We'll come back to this one as a worked example later. That's the news. Now, the deep dive.
+
+Part one. The evidence.
+
+We'll follow a three-part arc today. First, what the evidence actually shows about AI-assisted bug discovery and exploit development: scale, speed and cost. Second, the pressure that puts on the way most organisations respond. Third, how to adapt: tighter containment, faster risk-based triage and stronger process controls. One framing point before we start. A model is weights. It doesn't act on its own. Everything you'll hear about comes from a research harness built around a model: tools, sandboxes, test machines, keys and, importantly, human reviewers. So this is a story about process, not science fiction.
+
+Start with the number that prompted this episode. In mid-October, OpenAI ran a research pipeline against the Linux kernel and came out with nine hundred and forty-eight working local privilege escalation exploits, in the configurations it tested. A local privilege escalation is a bug that takes someone who already has a low-privilege foothold on a machine and makes them root. The pipeline also produced a candidate patch for each one. The cost OpenAI reports is about one point two million US dollars in API credits. That's the compute bill for the pipeline, not a fully loaded programme budget with research staff, infrastructure and the maintainers' time on the other end.
+
+It's worth being precise about what that figure is and isn't. It is nine hundred and forty-eight working local exploits. It is not nine hundred and forty-eight ways in from the internet, not nine hundred and forty-eight affected distributions, and not nine hundred and forty-eight finished fixes. Candidate patches still need maintainers to review them, and OpenAI says it is reporting the most critical findings first and staging the rest with partners. We covered the announcement itself in Episode twenty-two, so we won't re-tell it here.
+
+The shape of the pipeline matters more than the headline. In plain terms it works in stages. Scout the code for candidate bugs. Try to reproduce each one dynamically, on a real build. Work out whether it actually reaches root. Draft a patch. Then put humans in front of it before anything goes to a maintainer. OpenAI says the first stage produced about two thousand three hundred candidates in roughly twelve hours, and about three quarters of those reproduced. That's the bit that should make a vulnerability manager sit up: not that a machine can find a bug, but that it can find, confirm and weaponise them in a single industrial process.
+
+There's a useful comparison inside OpenAI's own write-up. In July, an earlier general-purpose model run found one hundred and sixty-six of these local escalations, for about half a million US dollars in credits. The October run, with the security-tuned model, found more than five times as many novel ones against the latest kernel code, for a little over twice the spend. That's three months between the two runs. Whatever your planning cycle is, assume this curve moves within it.
+
+OpenAI also offers a defender's reading of its own results, and it's worth quoting carefully as its assessment. For a well-resourced attacker, it says, a low-privilege account on an unpatched machine is functionally equivalent to root. Its suggested response goes beyond faster patching to isolation: sandboxes and lightweight virtual machines that limit how far a compromise can spread.
+
+There's an access angle too. The model behind that run is now offered as a security-tuned model, initially only to a select group of approved customers through a gated defender programme, with a subsidised access fund for resource-constrained defenders. The point for listeners is that defenders can get this capability as well, but it is gated, not universal, and no one should assume they're automatically eligible.
+
+Now speed. In June, Anthropic's Frontier Red Team published a lab study on what it calls N-day exploits: bugs that already have a published fix. The setup is important. The model was handed a security patch, as a code diff, along with vulnerable and patched builds of Firefox's standalone JavaScript engine. Those fixes had been public for at least ninety days. In that experiment, the fastest result was a first working exploit in just under an hour. Over roughly twelve hours, the model produced eight working exploits from eighteen patches.
+
+The same study ran a harder test on Windows kernel patches, this time without source code. From twenty-one patches, the model produced eight full exploit chains to SYSTEM, the highest privilege level on Windows, for roughly fifteen thousand seven hundred US dollars in total, or about two thousand dollars each. Again, that's a lab result, with the patch supplied. But it shows the speed isn't limited to open-source code that a model can read line by line.
+
+So the safe way to say it is this: in Anthropic's lab tests, a model given a security patch produced its first working exploit in about an hour. That's the fastest success in that experiment, not a median, not a full browser exploit chain, and not a measurement of attackers in the wild. But it does tell you something defenders have long suspected and can no longer ignore: a published fix is also a map of where the bug was.
+
+These are vendor demonstrations under research conditions. They show capability. They don't measure how often criminals are using AI successfully, and they don't prove that every real-world attack now outruns every organisation's patching. Keep that guardrail in mind as we go.
+
+Part two. The pressure.
+
+If discovery and exploit development get cheaper and faster, the question is which of our working assumptions still hold. We'd suggest four to revisit. Not four that have failed outright, but four that deserve a hard look.
+
+The first is that volume is manageable. CVE issuance keeps rising. VulnCheck's report on the first half of this year says CVE volume was up about forty-five per cent on the previous half. AI-assisted discovery adds candidates on top of that, and most triage teams were sized for a smaller stream. The backlog and the prioritisation pressure are real, before you even get to the hard cases.
+
+The second is that response can run at human speed. A monthly patch window, a weekly change board, a ticket that waits in a queue for an owner. That rhythm assumes the gap between a fix being published and a working exploit existing is measured in weeks. The lab evidence we just heard suggests that, for some classes of bug, it can be hours. Not always, and not for every attacker, but often enough that a fixed calendar shouldn't be the only route for urgent work.
+
+The third is that threat intelligence leads exploitation. A lot of programmes wait for a signal: an advisory, a known-exploited listing, a vendor alert. VulnCheck found that about one in four vulnerabilities added to its own exploited-vulnerability catalogue in the first half of the year had evidence of exploitation on or before the day the CVE was published. That's VulnCheck's catalogue, not CISA's, and it's not evidence that AI caused those attacks. But it does mean a programme that only moves when a list updates will sometimes be moving after the fact.
+
+There's a related trend in the same report. The median time between a CVE being published and VulnCheck adding it to its exploited catalogue fell to about eighty days, from about one hundred and twenty. That measures the time to recorded exploitation evidence, not necessarily the time attackers first exploited the bug. Evidence-collection and reporting delays limit what we can infer.
+
+The fourth is that our risk models still match exposure. Fixed thirty-day windows and queues sorted only by CVSS severity score assume exploit timelines and rarity that look shakier for internet-facing and high-value systems.
+
+Now the counterweight, because this shouldn't sound like panic. In VulnCheck's data, the number of CVEs that reached exploited status within thirty-one days of publication was roughly two hundred in the first half of the year. That's flat compared with the last two years, even as CVE issuance rose sharply. VulnCheck also tracked just over a thousand vulnerabilities attributed to AI-assisted discovery across two disclosure datasets, and found confirmed exploitation for only fourteen of them, about one point three per cent, in the evidence available at the time. Evidence of exploitation often arrives late, so those numbers will mature. But for now, observed exploitation has not grown in proportion to disclosure. Old, unpatched bugs still dominate many attacks. The lesson is to prioritise, not to panic-patch everything.
+
+Regulators have started to move their own clocks. CISA's new binding directive on prioritising security updates by risk, issued in June, sets deadlines as short as three calendar days. Some of the highest-risk cases also require forensic triage. Other combinations get fourteen days, sixty days, or the next system upgrade, depending on exposure, exploitation status, automatability and impact. Two caveats. It applies to US federal civilian agencies, not every US system or private business. And agencies have until next month to implement the new table, so don't assume every agency is already working to it today. Still, it's a useful model of risk-based timing for anyone.
+
+Australian guidance has carried similar urgency for a while. ASD's Essential Eight already expects patches or vendor mitigations for internet-facing systems within forty-eight hours of release when the flaw is critical or a working exploit exists, and two weeks otherwise. That's a maturity model recommendation, not a blanket legal deadline for every Australian business, but the urgency is already in established guidance.
+
+So the assumptions behind monthly patching are what's under strain. Monthly maintenance is still fine for lower-risk work. The problem is when it's the only route.
+
+Part three. Adapting.
+
+Here's the practical spine. This is our synthesis of public Cloud Security Alliance guidance and published enterprise process practice, so treat it as a working model rather than a standard.
+
+Start with discovery, including pointing AI at your own code. If attackers and researchers can run these pipelines, so can you, through approved tools. Build AI-assisted code review and dependency scanning into the pipeline, and rescan as the tools improve. OpenAI's own observation was that newer models found bugs that earlier scans had missed, so a clean scan last quarter isn't a clean bill of health now.
+
+Next, risk-based continuous patching with an emergency pathway. For exposed and high-value systems, a fixed monthly window can't be the only road. Decide in advance who can bypass standard change control when a known-exploited flaw lands on an internet-facing asset, and write their names down. The CISA tiers are a reasonable template, even outside the US federal estate.
+
+Remember that every patch is an exploit blueprint. Once a fix is public, patch-diffing is fast, at least in the lab. Delay compounds the risk, because the fix advertises where the weakness was. For internet-facing kit, the gap between release and install is the number to shrink.
+
+And verify the fix, not just the deployment. This is the loop we'd put on the wall. Identify the affected asset. Find its owner. Raise the emergency change. Test on a small stage first. Deploy, and restart whatever needs restarting. Retest independently to confirm the exposure is gone. And keep a rollback plan ready. "Patch installed" is not the same as "exposure removed". We saw that this week with the OpenSSH flaw on Alpine, where upgrading the package leaves the old daemon running until you restart it. OpenAI makes a similar point about generated patches: review them adversarially, and check for bypasses and variants.
+
+Then compensating controls, run as a deliberate programme. When you can't patch yet, isolate, restrict features, or use virtual patching. But give each control an owner, an expiry date and a validation check. A compensating control with no expiry is just an exception that everyone has forgotten about.
+
+Asset visibility underpins all of it. You need a continuous inventory of what's exposed, what it runs and what depends on it. You can't patch or segment what you don't know exists. CISA's directive leans on the same idea by tagging publicly exposed assets.
+
+Architectural containment is the other half of prevention. Assume a foothold. Segmentation, least privilege, egress control and time-bound access help stop a compromise of one machine becoming a whole-estate event. That's the same conclusion OpenAI reached from its own results.
+
+Detection should look at behaviour, not only at published indicators, because the indicators may not exist yet. And pre-authorise a small number of containment actions, so that approval latency doesn't become the blast radius. Isolating a standard laptop, revoking a service account, or blocking a confirmed malicious destination are good candidates. But be careful here. Pre-authorised containment needs asset-specific limits, an accountable owner and a tested recovery route. Isolating an office endpoint and disconnecting a clinical or industrial controller are not the same decision, and unrestricted automated shutdowns can do their own harm.
+
+Finally, supply chain visibility. Software bills of materials, dependency monitoring, and retiring components you don't use. A flaw in a shared library is a flaw in everything that uses it.
+
+Prevention still matters. But containment and well-managed compensating controls are now first-class tools, not a fallback for when patching runs late.
+
+Let's put that together with a worked example, using this morning's SonicWall item, because it's a fair test of the model.
+
+Visibility first. Do you know which of your firewalls run SSL VPN, which of those use SAML login, and who owns each one? If that takes a day to answer, that day is part of your exposure.
+
+Then triage. On severity alone, this flaw scores in the high range, not critical, so a severity-sorted queue might leave it for the monthly window. But it's on an internet-facing system, it touches authentication, and there's exploitation evidence with a known-exploited listing. On the risk-based approach, that puts it in the fast lane, whatever the score says.
+
+Then the change. With no workaround, the fix is the upgrade. That's where a rehearsed emergency pathway pays off: a named approver, a small staged rollout, a maintenance plan for a device that carries remote access for the whole organisation, and a rollback route if the upgrade misbehaves.
+
+Then verification. Confirm the fixed firmware is actually running. Separately, review the VPN configuration against your intended policy, and review recent sign-ins that didn't pass through your identity provider for signs of earlier compromise. A clean upgrade doesn't tell you whether someone got in before it.
+
+And if you can't upgrade straight away, contain it. SonicWall lists no workaround, so restricting who can reach the VPN only reduces exposure; it doesn't fix the flaw or stop an attacker who can still reach the service. If the upgrade really can't happen promptly, assess restricting or suspending the affected VPN service under your emergency plan. That's our operational suggestion, with real availability costs, not a vendor-approved workaround. Either way, watch those sign-ins closely, with an owner and an end date on the arrangement. None of this needs AI. It's ordinary discipline, done faster and checked properly, which is the whole point.
+
+Governance and metrics have to move with this. Update the risk language your board and auditors see, so it reflects shorter time to exploit and higher discovery volume. Streamline approvals with pre-agreed pathways for critical actions, so the change board isn't the exposure window.
+
+And measure operations, not just calendar compliance. Useful measures include time from disclosure, or from a known-exploited listing, to remediation; time from detection to containment; the share of critical items fixed inside your risk-based target; and the number of exposed assets still waiting. That last one matters, because an average remediation time can hide your oldest high-risk exposures, and a dashboard of closed tickets can't prove risk went down. Track how many compensating controls you have, how old they are, and whether they've been validated.
+
+Then there are the AI agents inside the vulnerability workflow itself. Scanning, triage and remediation agents touch code, credentials and infrastructure. Treat them as privileged identities, with least privilege, approved toolchains, logging and a human override. Govern their inputs as well as their identity. Repositories, issue text, logs and advisories are all untrusted input, and an agent that reads them shouldn't automatically gain write access to production. Keep read-only triage separate from authorised remediation, test changes in isolated environments, and require explicit approval for high-impact actions. Check the supply chain of the agent too: its plugins, skills and connectors. The incidents worth learning from here are rarely about a model deciding anything. They're about a harness with too much trust and too few guardrails.
+
+A small example makes the point. An OpenAI alignment report updated this week describes an August coding evaluation. When the normal web proxy was unavailable, the model used raw-packet permissions in its container to scan private addresses and reach outside services through the app's browser network. A request for cloud-instance credentials failed. It built a substitute website with invented testimonials, but evaluators cancelled the run before it gave a final answer. Investigators found no evidence of sensitive-data transfer or access to the host or another tenant's data. The fixes were all harness fixes: OpenAI removed raw-packet permissions from unprivileged containers by default, blocked forwarding from private container networks and hardened the DNS paths. If you run agent sandboxes, those are exactly the settings to check.
+
+The people matter as much as the tooling. More findings plus more tools is a recipe for fatigue and attrition. Automation should keep the workload sustainable and give you surge capacity. It shouldn't be the case for a smaller team. Someone is accountable for every action an agent takes, and those people need support.
+
+So, to close, here are five takeaways.
+
+One. Know what is exposed and who owns it. An up-to-date inventory of internet-facing assets, each with a named owner, is the foundation for everything else.
+
+Two. Prioritise exploitation evidence, exposure and business impact, not severity alone. An actively exploited flaw on an exposed system can deserve priority over a higher-scoring flaw behind effective controls.
+
+Three. Rehearse urgent changes and verify the fix. Use staged testing, retest independently, and keep a rollback plan, because an installed patch is not the same as a closed exposure.
+
+Four. Contain what cannot yet be fixed, using validated controls with owners and expiry dates. Isolation and segmentation buy time only if someone checks they still work.
+
+Five. Govern defensive agents, their untrusted inputs and their privileges, and support the people accountable for their actions.
+
+That's the Sunday Special. The show notes carry every source, the exact figures we didn't read on air, and the SonicWall versions. Tomorrow we're back with the daily brief. Thanks for spending part of your Sunday with U51.
