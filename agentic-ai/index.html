@@ -1,0 +1,2113 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enterprise Agentic AI Security Assurance Framework - Ajith Thamarakshan</title>
+<style>
+  :root {
+    --bg-void: #050505;
+    --bg-canvas: #080808;
+    --bg-card: #0e0e0e;
+    --bg-elevated: #161616;
+    --bg-hover: #202020;
+    --fg-primary: #ffffff;
+    --fg-secondary: #cfcfcf;
+    --fg-muted: #888888;
+    --border-strong: #ffffff;
+    --border-mid: #4a4a4a;
+    --border-subtle: #262626;
+    --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+  }
+
+  html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: var(--bg-void);
+    color: var(--fg-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Subtle vignette and scanline overlay */
+  .viewport-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 900;
+    background:
+      radial-gradient(circle at 50% 50%, transparent 68%, rgba(0, 0, 0, 0.65) 100%),
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0px, rgba(255, 255, 255, 0.012) 1px, transparent 1px, transparent 3px);
+  }
+
+  /* Main Interactive Viewport */
+  #viewport {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    cursor: grab;
+    background-color: var(--bg-void);
+  }
+
+  #viewport.dragging {
+    cursor: grabbing;
+  }
+
+  /* Camera Rig anchored at screen centre (50%, 50%) */
+  #camera-rig {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  /* World Coordinate System (0,0 aligned with camera-rig) */
+  #world {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    transform-origin: 0 0;
+  }
+
+  /* Architectural Grid Background */
+  .world-grid {
+    position: absolute;
+    left: -10000px;
+    top: -6000px;
+    width: 20000px;
+    height: 12000px;
+    background-color: var(--bg-canvas);
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(to right, rgba(255,255,255,0.09) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.09) 1px, transparent 1px);
+    background-size: 80px 80px, 80px 80px, 400px 400px, 400px 400px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* SVG Connection Layer in World Coordinates */
+  #canvas-connections {
+    position: absolute;
+    left: -10000px;
+    top: -6000px;
+    width: 20000px;
+    height: 12000px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .connection-line {
+    fill: none;
+    stroke: #383838;
+    stroke-width: 3;
+    stroke-dasharray: 12 10;
+  }
+
+  .connection-pulse {
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 4;
+    stroke-dasharray: 28 360;
+    animation: flowPulse 5s linear infinite;
+  }
+
+  @keyframes flowPulse {
+    from { stroke-dashoffset: 388; }
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* Slide Nodes on Spatial Canvas */
+  .slide-node {
+    position: absolute;
+    width: 1240px;
+    height: 760px;
+    margin-left: -620px;
+    margin-top: -380px;
+    background: var(--bg-card);
+    border: 2px solid var(--border-mid);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.95);
+    padding: 38px 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    z-index: 2;
+    transition: border-color 0.35s ease, box-shadow 0.35s ease;
+    overflow: hidden;
+  }
+
+  /* Corner technical brackets */
+  .slide-node::before,
+  .slide-node::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-color: var(--fg-primary);
+    border-style: solid;
+    pointer-events: none;
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .slide-node::before {
+    top: 10px;
+    left: 10px;
+    border-width: 2px 0 0 2px;
+  }
+
+  .slide-node::after {
+    bottom: 10px;
+    right: 10px;
+    border-width: 0 2px 2px 0;
+  }
+
+  .slide-node.active {
+    border-color: var(--fg-primary);
+    box-shadow: 0 40px 130px rgba(0, 0, 0, 0.98), 0 0 50px rgba(255, 255, 255, 0.12);
+    z-index: 5;
+  }
+
+  /* Quirky spring-loaded entrance for active slide blocks */
+  @keyframes quirkyPop {
+    0% {
+      transform: translateY(22px) scale(0.96) rotate(-0.6deg);
+    }
+    60% {
+      transform: translateY(-4px) scale(1.01) rotate(0.2deg);
+    }
+    100% {
+      transform: translateY(0) scale(1) rotate(0deg);
+    }
+  }
+
+  .slide-node.active .stagger-item {
+    animation: quirkyPop 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  .slide-node.active .stagger-item:nth-child(1) { animation-delay: 0.05s; }
+  .slide-node.active .stagger-item:nth-child(2) { animation-delay: 0.12s; }
+  .slide-node.active .stagger-item:nth-child(3) { animation-delay: 0.19s; }
+  .slide-node.active .stagger-item:nth-child(4) { animation-delay: 0.26s; }
+
+  /* Top laser scan sweep on active node */
+  .scan-bar {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 60%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #ffffff, transparent);
+    pointer-events: none;
+  }
+
+  .slide-node.active .scan-bar {
+    animation: scanSweep 2.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes scanSweep {
+    0% { left: -60%; opacity: 1; }
+    100% { left: 110%; opacity: 0; }
+  }
+
+  /* Title Card Specific Styling */
+  .title-hero-box {
+    border: 1px solid var(--fg-primary);
+    background: linear-gradient(180deg, #151515 0%, #0b0b0b 100%);
+    padding: 36px 40px;
+    position: relative;
+  }
+
+  .title-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--fg-secondary);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: inline-block;
+    border: 1px solid var(--border-mid);
+    padding: 4px 10px;
+    background: #080808;
+  }
+
+  .title-main-heading {
+    font-size: 46px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+    color: var(--fg-primary);
+    margin-bottom: 16px;
+  }
+
+  .title-sub-heading {
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--fg-secondary);
+    max-width: 960px;
+  }
+
+  .author-banner {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  .author-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--fg-primary);
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .author-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .author-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--fg-primary);
+    letter-spacing: -0.01em;
+  }
+
+  .start-tour-btn {
+    margin-top: 12px;
+    align-self: flex-start;
+    background: var(--fg-primary);
+    color: var(--bg-void);
+    border: 1px solid var(--fg-primary);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 8px 16px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+  }
+
+  .start-tour-btn:hover {
+    transform: translateX(6px) scale(1.03);
+    background: #dcdcdc;
+  }
+
+  /* Slide Header */
+  .slide-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid var(--border-mid);
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+  }
+
+  .slide-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  .slide-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--fg-primary);
+    line-height: 1.15;
+  }
+
+  .slide-badge {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    padding: 6px 12px;
+    border: 1px solid var(--fg-primary);
+    background: var(--bg-elevated);
+    color: var(--fg-primary);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+  }
+
+  .slide-badge:hover {
+    transform: rotate(-2.5deg) scale(1.07);
+    background: var(--fg-primary);
+    color: var(--bg-void);
+  }
+
+  /* Slide Body & Footer */
+  .slide-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 14px;
+    overflow: hidden;
+  }
+
+  .slide-footer {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 10px;
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-muted);
+  }
+
+  p {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--fg-secondary);
+    margin-top: 4px;
+    margin-bottom: 4px;
+  }
+
+  /* Grids */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  /* Cards */
+  .mono-card {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-mid);
+    padding: 15px 16px;
+    position: relative;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .mono-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    border-color: var(--fg-primary);
+    background: var(--bg-hover);
+  }
+
+  .mono-card h3 {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--fg-primary);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-index {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--fg-secondary);
+    border: 1px solid var(--border-mid);
+    padding: 2px 6px;
+    background: #0b0b0b;
+  }
+
+  /* 7-Stage Pipeline Diagram */
+  .pipeline-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .stage-box {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-mid);
+    padding: 12px 10px;
+    position: relative;
+    transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .stage-box:hover {
+    transform: scale(1.05) translateY(-4px);
+    border-color: var(--fg-primary);
+    background: #222222;
+  }
+
+  .stage-box .step-num {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--fg-muted);
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .stage-box h4 {
+    font-size: 13.5px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--fg-primary);
+  }
+
+  .stage-box p {
+    font-size: 11px;
+    line-height: 1.38;
+    color: var(--fg-secondary);
+  }
+
+  /* Tables */
+  .mono-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .mono-table th,
+  .mono-table td {
+    border: 1px solid var(--border-mid);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .mono-table th {
+    background: #1c1c1c;
+    color: var(--fg-primary);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+
+  .mono-table tr {
+    background: var(--bg-elevated);
+    transition: background 0.18s ease;
+  }
+
+  .mono-table tbody tr:hover {
+    background: #252525;
+  }
+
+  .risk-pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border: 1px solid var(--fg-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .risk-pill.low {
+    border-color: #888888;
+    color: #dddddd;
+    background: transparent;
+  }
+
+  .risk-pill.med {
+    border-color: #cccccc;
+    color: #ffffff;
+    background: #2a2a2a;
+  }
+
+  .risk-pill.high {
+    border-color: #ffffff;
+    color: #000000;
+    background: #ffffff;
+    font-weight: 700;
+  }
+
+  /* Architecture Stack Layers */
+  .stack-container {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .stack-layer {
+    display: grid;
+    grid-template-columns: 230px 1fr 210px;
+    align-items: center;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-mid);
+    padding: 10px 14px;
+    gap: 14px;
+    transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s;
+  }
+
+  .stack-layer:hover {
+    transform: translateX(8px);
+    border-color: var(--fg-primary);
+  }
+
+  .stack-layer h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--fg-primary);
+  }
+
+  .stack-layer p {
+    font-size: 12px;
+    margin: 0;
+  }
+
+  .stack-tag {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--fg-secondary);
+    text-align: right;
+  }
+
+  /* Bar Charts */
+  .bar-track {
+    width: 100%;
+    height: 8px;
+    background: #1f1f1f;
+    border: 1px solid #3a3a3a;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    background: var(--fg-primary);
+    width: var(--target-width, 50%);
+    transform-origin: left center;
+    transition: transform 0.9s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Interactive Simulator Controls */
+  .sim-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .sim-control {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-mid);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .sim-control h4 {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--fg-primary);
+  }
+
+  .sim-btn-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+  }
+
+  .sim-btn {
+    background: #0e0e0e;
+    border: 1px solid #3a3a3a;
+    color: var(--fg-secondary);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    padding: 5px 0;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .sim-btn:hover {
+    border-color: var(--fg-primary);
+  }
+
+  .sim-btn.selected {
+    background: var(--fg-primary);
+    color: var(--bg-void);
+    border-color: var(--fg-primary);
+    font-weight: 700;
+  }
+
+  /* Top-Left Telemetry HUD */
+  .hud-top-left {
+    position: fixed;
+    top: 18px;
+    left: 20px;
+    z-index: 950;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: rgba(10, 10, 10, 0.92);
+    border: 1px solid var(--border-mid);
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+  }
+
+  .hud-brand {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--fg-primary);
+  }
+
+  .hud-coords {
+    font-size: 10.5px;
+    color: var(--fg-muted);
+    display: flex;
+    gap: 12px;
+  }
+
+  /* Top-Right Minimap Radar */
+  .hud-minimap {
+    position: fixed;
+    top: 18px;
+    right: 20px;
+    width: 245px;
+    height: 152px;
+    background: rgba(10, 10, 10, 0.92);
+    border: 1px solid var(--border-mid);
+    z-index: 950;
+    padding: 8px;
+  }
+
+  .minimap-label {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    color: var(--fg-muted);
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #minimap-svg {
+    width: 100%;
+    height: 118px;
+    background: #050505;
+    border: 1px solid #262626;
+    cursor: pointer;
+  }
+
+  /* Bottom Navigation Bar */
+  .hud-bottom {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 950;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(10, 10, 10, 0.95);
+    border: 1px solid var(--border-strong);
+    padding: 8px 12px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9);
+  }
+
+  .nav-btn {
+    background: var(--bg-elevated);
+    color: var(--fg-primary);
+    border: 1px solid var(--border-mid);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 7px 12px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .nav-btn:hover {
+    background: var(--fg-primary);
+    color: var(--bg-void);
+    border-color: var(--fg-primary);
+    transform: translateY(-2px);
+  }
+
+  .nav-btn.active-mode {
+    background: var(--fg-primary);
+    color: var(--bg-void);
+    border-color: var(--fg-primary);
+    font-weight: 700;
+  }
+
+  .slide-counter {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 0 10px;
+    color: var(--fg-primary);
+    min-width: 82px;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  /* Slide Index Drawer */
+  #slide-drawer {
+    position: fixed;
+    bottom: 74px;
+    left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: rgba(12, 12, 12, 0.98);
+    border: 1px solid var(--fg-primary);
+    padding: 14px;
+    z-index: 945;
+    width: 820px;
+    max-width: 94vw;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  #slide-drawer.open {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+
+  .drawer-item {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-mid);
+    padding: 8px 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-secondary);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+  }
+
+  .drawer-item:hover,
+  .drawer-item.current {
+    background: var(--fg-primary);
+    color: var(--bg-void);
+    border-color: var(--fg-primary);
+    font-weight: 700;
+  }
+
+  /* Cinematic Toast Banner */
+  #cinematic-toast {
+    position: fixed;
+    top: 76px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 960;
+    background: #ffffff;
+    color: #000000;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    padding: 7px 16px;
+    text-transform: uppercase;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+  }
+
+  #cinematic-toast.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-12px);
+  }
+</style>
+</head>
+<body>
+
+<div class="viewport-overlay"></div>
+
+
+<!-- Top-Left Telemetry HUD -->
+<div class="hud-top-left">
+  <div class="hud-brand">ENTERPRISE AGENTIC AI // AJITH THAMARAKSHAN</div>
+  <div class="hud-coords">
+    <span id="hud-x">X: -5000</span>
+    <span id="hud-y">Y: -1600</span>
+    <span id="hud-z">SCALE: 1.00x</span>
+    <span id="hud-vel">VEL: 0.0</span>
+  </div>
+</div>
+
+<!-- Top-Right Minimap -->
+<div class="hud-minimap" title="Click any node to fly directly to that slide">
+  <div class="minimap-label">
+    <span>SPATIAL CANVAS RADAR</span>
+    <span id="minimap-mode">LOCKED</span>
+  </div>
+  <svg id="minimap-svg" viewBox="-6000 -2800 9200 5800"></svg>
+</div>
+
+<!-- Slide Index Drawer -->
+<div id="slide-drawer"></div>
+
+<!-- Bottom Navigation Bar -->
+<div class="hud-bottom">
+  <button class="nav-btn" id="btn-prev" title="Previous Slide (Left Arrow)">PREV</button>
+  <div class="slide-counter" id="slide-indicator">01 / 12</div>
+  <button class="nav-btn" id="btn-next" title="Next Slide (Right Arrow / Space)">NEXT</button>
+  <button class="nav-btn" id="btn-index" title="Toggle Slide Directory">INDEX</button>
+  <button class="nav-btn" id="btn-overview" title="Toggle Full Canvas Overview (O)">OVERVIEW [O]</button>
+  <button class="nav-btn" id="btn-autoplay" title="Toggle Cinematic Auto-Tour (P)">AUTO-TOUR [P]</button>
+  <button class="nav-btn" id="btn-zoom-in" title="Zoom In (Up Arrow)">ZOOM + [UP]</button>
+  <button class="nav-btn" id="btn-zoom-out" title="Zoom Out (Down Arrow)">ZOOM - [DOWN]</button>
+</div>
+
+<!-- Main Spatial Viewport -->
+<div id="viewport">
+  <div id="camera-rig">
+    <div id="world">
+      <div class="world-grid"></div>
+      <svg id="canvas-connections" viewBox="-10000 -6000 20000 12000"></svg>
+
+      <!-- NODE 00: TITLE CARD -->
+      <section class="slide-node active" style="left: -5000px; top: -1600px;" data-index="0" data-title="00. Title Card // Ajith Thamarakshan" data-x="-5000" data-y="-1600" data-scale="1" data-rot="0">
+        <div class="scan-bar"></div>
+        <div class="slide-header stagger-item" style="border-bottom: 1px solid var(--border-subtle);">
+          <div>
+            <div class="slide-meta">ENTERPRISE SECURITY ASSURANCE</div>
+          </div>
+        </div>
+
+        <div class="slide-body" style="justify-content: center; gap: 48px; padding: 0 24px;">
+          <div class="stagger-item">
+            <h1 class="title-main-heading" style="font-size: 54px; max-width: 980px; margin-bottom: 20px;">Enterprise Agentic AI Security Assurance Framework</h1>
+            <p class="title-sub-heading" style="font-size: 16px; max-width: 760px; color: var(--fg-muted);">
+              End-to-end lifecycle governance, architectural anatomy, risk triage, and continuous assurance for enterprise agentic systems.
+            </p>
+          </div>
+
+          <div class="stagger-item" style="display: flex; align-items: flex-end; justify-content: space-between; border-top: 1px solid var(--border-mid); padding-top: 28px;">
+            <div>
+              <div class="author-label">AUTHOR</div>
+              <div class="author-name" style="font-size: 26px;">Ajith Thamarakshan</div>
+            </div>
+            <button class="start-tour-btn" id="btn-begin-presentation" style="margin-top: 0; padding: 12px 22px; font-size: 12px;">BEGIN PRESENTATION -&gt;</button>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>ENTERPRISE AGENTIC AI SECURITY ASSURANCE FRAMEWORK</span>
+          <span>01 / 12</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 01: EXECUTIVE CONTEXT & LIFECYCLE SCOPE -->
+      <section class="slide-node" style="left: -3200px; top: -1600px;" data-index="1" data-title="01. Executive Context & Lifecycle" data-x="-3200" data-y="-1600" data-scale="1" data-rot="0">
+        <div class="scan-bar"></div>
+        <div class="slide-header stagger-item">
+          <div>
+            <div class="slide-meta">01 // STRATEGIC FOUNDATION &amp; SCOPE</div>
+            <h2 class="slide-title">Executive Context and End-to-End Lifecycle Scope</h2>
+          </div>
+          <div class="slide-badge">END-TO-END LIFECYCLE</div>
+        </div>
+
+        <div class="slide-body">
+          <p class="stagger-item">
+            Enterprise adoption of Artificial Intelligence (AI) has progressed from static chat interfaces to autonomous agentic systems that plan, reason, invoke tools, and execute actions across corporate environments. Governing these systems requires embedding security assurance across all seven lifecycle stages.
+          </p>
+
+          <!-- 7-Stage Pipeline Diagram -->
+          <div class="pipeline-row stagger-item">
+            <div class="stage-box">
+              <span class="step-num">STAGE 01</span>
+              <h4>Code</h4>
+              <p>Isolated development workspace, approved model library, and scoped tool selection.</p>
+            </div>
+            <div class="stage-box">
+              <span class="step-num">STAGE 02</span>
+              <h4>Build</h4>
+              <p>Dependency verification, Artificial Intelligence Bill of Materials (AI BOM) registration, and identity binding.</p>
+            </div>
+            <div class="stage-box">
+              <span class="step-num">STAGE 03</span>
+              <h4>Test</h4>
+              <p>User Acceptance Testing (UAT), pattern validation, prompt injection testing, and sandbox escape verification.</p>
+            </div>
+            <div class="stage-box">
+              <span class="step-num">STAGE 04</span>
+              <h4>Release</h4>
+              <p>Change Advisory Board (CAB) sign-off, remediation verification, and formal risk acceptance.</p>
+            </div>
+            <div class="stage-box">
+              <span class="step-num">STAGE 05</span>
+              <h4>Deploy</h4>
+              <p>Automated Continuous Integration and Continuous Deployment (CI/CD) promotion behind external guardrails.</p>
+            </div>
+            <div class="stage-box">
+              <span class="step-num">STAGE 06</span>
+              <h4>Operate</h4>
+              <p>Enforced runtime boundaries, human approval gates, and least-privilege token exchange.</p>
+            </div>
+            <div class="stage-box">
+              <span class="step-num">STAGE 07</span>
+              <h4>Monitor</h4>
+              <p>Behavioural drift detection, immutable audit telemetry, containment triggers, and reassessment loops.</p>
+            </div>
+          </div>
+
+          <!-- 3 Core Control Categories -->
+          <div class="grid-3 stagger-item">
+            <div class="mono-card">
+              <h3>Governance and Accountability <span class="card-index">CAT-01</span></h3>
+              <p>Establishes explicit business ownership, ten-minute triage intake, formal risk acceptance thresholds, and human oversight models across every deployment.</p>
+            </div>
+            <div class="mono-card">
+              <h3>Technical Guardrails <span class="card-index">CAT-02</span></h3>
+              <p>Enforces deterministic identity context, network segmentation, data minimisation, and execution sandboxing outside the model and agent harness.</p>
+            </div>
+            <div class="mono-card">
+              <h3>Assurance and Monitoring <span class="card-index">CAT-03</span></h3>
+              <p>Validates pre-release security posture through the AI Security Assurance Process and continuously correlates runtime tool activity after go-live.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>LIFECYCLE GOVERNANCE // CODE, BUILD, TEST, RELEASE, DEPLOY, OPERATE, MONITOR</span>
+          <span>02 / 12</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 02: INDUSTRY REFERENCE MODELS -->
+      <section class="slide-node" style="left: -1400px; top: -1600px;" data-index="2" data-title="02. Industry Reference Models" data-x="-1400" data-y="-1600" data-scale="1" data-rot="-1.2">
+        <div class="scan-bar"></div>
+        <div class="slide-header stagger-item">
+          <div>
+            <div class="slide-meta">02 // ARCHITECTURAL ALIGNMENT</div>
+            <h2 class="slide-title">Industry Reference Models: AWS and OpenAI Alignment</h2>
+          </div>
+          <div class="slide-badge">SCOPING &amp; PILLARS</div>
+        </div>
+
+        <div class="slide-body">
+          <div class="grid-2 stagger-item">
+            <!-- AWS Scoping Matrix -->
+            <div class="mono-card">
+              <h3>AWS Agentic AI Security Scoping Matrix <span class="card-index">AWS-04</span></h3>
+              <p>Classifies agentic applications into four progressive agency scopes across six critical dimensions: identity context, data memory and state protection, audit and logging, agent and Foundation Model (FM) controls, agency perimeters and policies, and orchestration.</p>
+              <div style="margin-top:12px; display:flex; flex-direction:column; gap:9px;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11px;">
+                    <span>SCOPE 1: NO AGENCY (Read-only, predefined path)</span>
+                    <span>25% AUTONOMY</span>
+                  </div>
+                  <div class="bar-track"><div class="bar-fill" style="--target-width:25%;"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11px;">
+                    <span>SCOPE 2: PRESCRIBED AGENCY (Mandatory Human-in-the-Loop approval)</span>
+                    <span>50% AUTONOMY</span>
+                  </div>
+                  <div class="bar-track"><div class="bar-fill" style="--target-width:50%;"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11px;">
+                    <span>SCOPE 3: SUPERVISED AGENCY (Autonomous within bounded parameters)</span>
+                    <span>75% AUTONOMY</span>
+                  </div>
+                  <div class="bar-track"><div class="bar-fill" style="--target-width:75%;"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11px;">
+                    <span>SCOPE 4: FULL AGENCY (Self-initiating, continuous operation)</span>
+                    <span>100% AUTONOMY</span>
+                  </div>
+                  <div class="bar-track"><div class="bar-fill" style="--target-width:100%;"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- OpenAI Enterprise Model -->
+            <div class="mono-card">
+              <h3>OpenAI Enterprise Agent Security Model <span class="card-index">OAI-06</span></h3>
+              <p>Organises enterprise assurance around four foundational pillars: Governed Autonomy, Agentic Risk, Architectural Boundaries, and Operations and Response.</p>
+              <div class="grid-2" style="margin-top:10px; gap:8px;">
+                <div style="border:1px solid var(--border-subtle); padding:8px; background:#101010;">
+                  <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">01. IDENTITY &amp; AUTHENTICITY</div>
+                  <p style="font-size:11px;">Separates human user identity from agent workload and task context.</p>
+                </div>
+                <div style="border:1px solid var(--border-subtle); padding:8px; background:#101010;">
+                  <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">02. ACCESS &amp; AUTHORISATION</div>
+                  <p style="font-size:11px;">Enforces least-privilege permissions across downstream systems.</p>
+                </div>
+                <div style="border:1px solid var(--border-subtle); padding:8px; background:#101010;">
+                  <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">03. CAPABILITY &amp; TOOLS REGISTRY</div>
+                  <p style="font-size:11px;">Maintains an enterprise AI BOM of approved connectors and tools.</p>
+                </div>
+                <div style="border:1px solid var(--border-subtle); padding:8px; background:#101010;">
+                  <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">04. CONTEXT &amp; MEMORY PROTECTION</div>
+                  <p style="font-size:11px;">Protects session and persistent state from indirect injection.</p>
+                </div>
+                <div style="border:1px solid var(--border-subtle); padding:8px; background:#101010;">
+                  <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">05. POLICY &amp; ENFORCEMENT</div>
+                  <p style="font-size:11px;">Applies deterministic gates around consequential write actions.</p>
+                </div>
+                <div style="border:1px solid var(--border-subtle); padding:8px; background:#101010;">
+                  <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">06. AUDIT LOGGING &amp; RESPONSE</div>
+                  <p style="font-size:11px;">Captures immutable telemetry for attribution and isolation.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mono-card stagger-item">
+            <h3>Operational Synthesis for Enterprise Assurance <span class="card-index">SYNTHESIS</span></h3>
+            <p>Combining the AWS agency progression with the OpenAI control domains enables security teams to calibrate technical guardrails directly to agent capability, ensuring that operational monitoring and containment controls scale proportionally with autonomy.</p>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>REFERENCE ALIGNMENT // AWS SCOPING MATRIX &amp; OPENAI ENTERPRISE GUIDE</span>
+          <span>03 / 12</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 03: TARGET OPERATING MODEL -->
+      <section class="slide-node" style="left: 400px; top: -1600px;" data-index="3" data-title="03. Four-Pillar Target Operating Model" data-x="400" data-y="-1600" data-scale="1" data-rot="1.1">
+        <div class="scan-bar"></div>
+        <div class="slide-header stagger-item">
+          <div>
+            <div class="slide-meta">03 // GOVERNANCE ARCHITECTURE</div>
+            <h2 class="slide-title">Target Operating Model: Four Core Assurance Pillars</h2>
+          </div>
+          <div class="slide-badge">OPERATING MODEL</div>
+        </div>
+
+        <div class="slide-body">
+          <p class="stagger-item">
+            The target operating model governs agentic AI across the enterprise through four interdependent pillars that connect pre-deployment registration with runtime enforcement.
+          </p>
+
+          <div class="grid-4 stagger-item">
+            <div class="mono-card">
+              <h3>01. Inventory <span class="card-index">PILLAR 1</span></h3>
+              <p>Establishes an authoritative central register covering all agent platforms, deployed agents, business owners, connected tools, and permission scopes.</p>
+              <div style="margin-top:12px; border-top:1px solid var(--border-subtle); padding-top:8px; font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">
+                + Platform Catalogue<br>
+                + Named Accountable Owners<br>
+                + Tool &amp; Connector AI BOM<br>
+                + Permission Matrix
+              </div>
+            </div>
+
+            <div class="mono-card">
+              <h3>02. Control Change <span class="card-index">PILLAR 2</span></h3>
+              <p>Defines platform security baselines, publishing controls, artefact versioning, and mandatory reassessment triggers across the delivery pipeline.</p>
+              <div style="margin-top:12px; border-top:1px solid var(--border-subtle); padding-top:8px; font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">
+                + Hardened Baselines<br>
+                + Publishing Gates<br>
+                + Version Control<br>
+                + Reassessment Triggers
+              </div>
+            </div>
+
+            <div class="mono-card">
+              <h3>03. Continuous Assurance <span class="card-index">PILLAR 3</span></h3>
+              <p>Monitors behavioural drift, security events, tool invocation patterns, and control health after go-live to confirm ongoing compliance.</p>
+              <div style="margin-top:12px; border-top:1px solid var(--border-subtle); padding-top:8px; font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">
+                + Drift Telemetry<br>
+                + Event Correlation<br>
+                + Tool Activity Audit<br>
+                + Control Health Checks
+              </div>
+            </div>
+
+            <div class="mono-card">
+              <h3>04. External Guardrails <span class="card-index">PILLAR 4</span></h3>
+              <p>Enforces identity, data, network, and action controls outside the Large Language Model (LLM) and agent harness to prevent bypass.</p>
+              <div style="margin-top:12px; border-top:1px solid var(--border-subtle); padding-top:8px; font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">
+                + Out-of-Harness Enforcement<br>
+                + Identity Token Gateways<br>
+                + Network Egress Filters<br>
+                + Deterministic Action Gates
+              </div>
+            </div>
+          </div>
+
+          <div class="mono-card stagger-item">
+            <h3>Architectural Principle: Externalised Enforcement Outside the Agent Harness <span class="card-index">DEFENCE IN DEPTH</span></h3>
+            <div class="grid-3" style="margin-top:8px;">
+              <div style="border:1px solid var(--border-mid); padding:10px; background:#090909;">
+                <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-muted);">UNTRUSTED REASONING ZONE</div>
+                <p style="font-size:11.5px; color:var(--fg-primary);">LLM and Agent Harness (Susceptible to prompt injection and goal drift)</p>
+              </div>
+              <div style="border:1px solid var(--fg-primary); padding:10px; background:#1c1c1c;">
+                <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">EXTERNAL GUARDRAIL BOUNDARY</div>
+                <p style="font-size:11.5px; color:var(--fg-primary);">API Gateways, Identity Proxies, Network Firewalls, and Human Approval Gates</p>
+              </div>
+              <div style="border:1px solid var(--border-mid); padding:10px; background:#090909;">
+                <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-muted);">PROTECTED ENTERPRISE ZONE</div>
+                <p style="font-size:11.5px; color:var(--fg-primary);">Core Systems of Record, Sensitive Repositories, and Production Infrastructure</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>FOUR PILLARS // INVENTORY, CONTROL CHANGE, CONTINUOUS ASSURANCE, EXTERNAL GUARDRAILS</span>
+          <span>04 / 12</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 04: ENTERPRISE ANATOMY OF AN AI AGENT -->
+      <section class="slide-node" style="left: 2200px; top: -1200px;" data-index="4" data-title="04. Enterprise Anatomy of an AI Agent" data-x="2200" data-y="-1200" data-scale="1" data-rot="0">
+        <div class="scan-bar"></div>
+        <div class="slide-header stagger-item">
+          <div>
+            <div class="slide-meta">04 // ARCHITECTURAL DECOMPOSITION</div>
+            <h2 class="slide-title">Enterprise Anatomy of an AI Agent: Six-Layer Stack</h2>
+          </div>
+          <div class="slide-badge">6 ARCHITECTURAL LAYERS</div>
+        </div>
+
+        <div class="slide-body">
+          <div class="stack-container stagger-item">
+            <div class="stack-layer" style="border-color:var(--fg-primary); background:#1d1d1d;">
+              <h4>06. Governance Layer</h4>
+              <p>Cross-cutting inventory registration, policy enforcement, configuration drift detection, audit logging, and runtime containment.</p>
+              <div class="stack-tag">OVERARCHING CONTROL PLANE</div>
+            </div>
+
+            <div class="stack-layer">
+              <h4>05. Presentation Layer</h4>
+              <p>Publishing channels and user interfaces including Microsoft Teams, Microsoft 365 Copilot Chat, and custom enterprise web portals.</p>
+              <div class="stack-tag">CHANNEL &amp; SESSION BINDING</div>
+            </div>
+
+            <div class="stack-layer">
+              <h4>04. Model Layer</h4>
+              <p>Connections to the approved enterprise library of LLMs with version pinning, routing rules, and content safety filters.</p>
+              <div class="stack-tag">APPROVED LLM REGISTRY</div>
+            </div>
+
+            <div class="stack-layer">
+              <h4>03. Capability Layer</h4>
+              <p>Tools, Model Context Protocol (MCP) connectors, enterprise knowledge bases, workload identities, and scoped permissions.</p>
+              <div class="stack-tag">TOOLS, DATA &amp; IDENTITIES</div>
+            </div>
+
+            <div class="stack-layer">
+              <h4>02. Team &amp; Project Boundary</h4>
+              <p>Segregated Development, Test, and Production environments (such as Power Platform environments) with CI/CD promotion.</p>
+              <div class="stack-tag">DEV -&gt; TEST (UAT) -&gt; PROD</div>
+            </div>
+
+            <div class="stack-layer">
+              <h4>01. Agent Platform Layer</h4>
+              <p>Foundational hosting platform such as Microsoft Copilot Studio, Amazon Bedrock AgentCore, or containerised SaaS runtimes.</p>
+              <div class="stack-tag">INFRASTRUCTURE &amp; TENANCY</div>
+            </div>
+          </div>
+
+          <div class="mono-card stagger-item">
+            <h3>Environment Segregation and Release Discipline <span class="card-index">CI/CD CONTROL</span></h3>
+            <p>Developers hold access strictly to the Development environment to build and configure agents. Automated CI/CD pipelines promote agent packages to the Test environment for UAT. Following formal approval, release managers or platform administrators migrate validated packages to the Production environment.</p>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>LAYERED ASSURANCE // SEGREGATED DEV, TEST, AND PRODUCTION BOUNDARIES</span>
+          <span>05 / 12</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 05: TAXONOMY OF ENTERPRISE AGENT ARCHETYPES (MATRIX) -->
+      <section class="slide-node" style="left: 2200px; top: 400px;" data-index="5" data-title="05. Agent Archetypes Matrix" data-x="2200" data-y="400" data-scale="1" data-rot="-1">
+        <div class="scan-bar"></div>
+        <div class="slide-header stagger-item">
+          <div>
+            <div class="slide-meta">05 // CLASSIFICATION MATRIX</div>
+            <h2 class="slide-title">Taxonomy of Enterprise Agent Archetypes</h2>
+          </div>
+          <div class="slide-badge">7 ARCHETYPE PATTERNS</div>
+        </div>
+
+        <div class="slide-body">
+          <table class="mono-table stagger-item">
+            <thead>
+              <tr>
+                <th>Agent Archetype</th>
+                <th>Autonomy</th>
+                <th>State &amp; Memory</th>
+                <th>Actions &amp; Access</th>
+                <th>Indicative Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1. Knowledge Assistant</td>
+                <td>Very Low</td>
+                <td>Session-based ephemeral</td>
+                <td>Read-only approved SharePoint or documents; no internet</td>
+                <td><span class="risk-pill low">Low</span></td>
+              </tr>
+              <tr>
+                <td>2. Workflow Agent</td>
+                <td>Low to Medium</td>
+                <td>Active workflow state</td>
+                <td>Bounded actions in approved apps via MCP connectors</td>
+                <td><span class="risk-pill med">Low to Medium</span></td>
+              </tr>
+              <tr>
+                <td>3. Goal-Based Task Agent</td>
+                <td>Medium to High</td>
+                <td>End-to-end task state</td>
+                <td>Application Programming Interfaces (APIs), local files, browser, commands</td>
+                <td><span class="risk-pill med">Medium to High</span></td>
+              </tr>
+              <tr>
+                <td>4. Coding &amp; Computer-Use</td>
+                <td>High</td>
+                <td>Full task workspace</td>
+                <td>Shell, file system, browser, build tools, deployment pipelines</td>
+                <td><span class="risk-pill high">High</span></td>
+              </tr>
+              <tr>
+                <td>5. Persistent Personal Agent</td>
+                <td>High</td>
+                <td>Cross-session persistent</td>
+                <td>Email, calendar, documents, messaging, connected apps</td>
+                <td><span class="risk-pill high">High</span></td>
+              </tr>
+              <tr>
+                <td>6. Specialist Business Agent</td>
+                <td>Medium to High</td>
+                <td>Role-specific memory</td>
+                <td>Core business applications and enterprise systems of record</td>
+                <td><span class="risk-pill med">Medium to High</span></td>
+              </tr>
+              <tr>
+                <td>7. Multi-Agent System</td>
+                <td>High</td>
+                <td>Shared &amp; isolated state</td>
+                <td>Shared tools, inter-agent messaging, delegated identities, vaults</td>
+                <td><span class="risk-pill high">High to Very High</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="mono-card stagger-item">
+            <h3>Pattern-Driven Assurance Routing <span class="card-index">ASSURANCE MAPPING</span></h3>
+            <p>Standardised low-risk archetypes such as read-only Knowledge Assistants qualify for accelerated Pattern Assessment, whereas Coding Agents, Persistent Personal Agents, and Multi-Agent Systems trigger the Full AI Security Assurance Process.</p>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>ARCHETYPE TAXONOMY // AUTONOMY, MEMORY, ACCESS, AND INDICATIVE RISK</span>
+          <span>06 / 12</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 06: ARCHETYPE DEEP DIVE -->
+      <section class="slide-node" style="left: 400px; top: 400px;" data-index="6" data-title="06. Archetype Operational Profiles" data-x="400" data-y="400" data-scale="1" data-rot="1">
+        <div class="scan-bar"></div>
+        <div class="slide-header stagger-item">
+          <div>
+            <div class="slide-meta">06 // RUNTIME &amp; USE CASE PROFILES</div>
+            <h2 class="slide-title">Operational Profiles Across the Seven Agent Archetypes</h2>
+          </div>
+          <div class="slide-badge">RUNTIME BEHAVIOUR</div>
+        </div>
+
+        <div class="slide-body">
+          <div class="grid-3 stagger-item">
+            <div class="mono-card">
+              <h3>Knowledge &amp; Workflow <span class="card-index">TYPES 1-2</span></h3>
+              <p>Knowledge Assistants run in managed SaaS backends for policy search and Frequently Asked Questions (FAQ) retrieval with disabled internet access. Workflow Agents automate onboarding, offboarding, and invoicing using bounded rules.</p>
+            </div>
+            <div class="mono-card">
+              <h3>Goal-Based &amp; Coding <span class="card-index">TYPES 3-4</span></h3>
+              <p>Goal-Based Task Agents run in containers or Virtual Machines (VMs) to conduct cryptographic research, contract analysis, or cyber defence investigations. Coding Agents operate inside micro-VMs with shell and deployment access.</p>
+            </div>
+            <div class="mono-card">
+              <h3>Personal, Specialist &amp; Multi <span class="card-index">TYPES 5-7</span></h3>
+              <p>Persistent Personal Agents retain cross-session state across user mailboxes. Specialist Business Agents execute procurement, legal, and finance workflows. Multi-Agent Systems orchestrate isolated runtimes with dedicated vaults.</p>
+            </div>
+          </div>
+
+          <div class="mono-card stagger-item">
+            <h3>Comparative Autonomy and Blast Radius Exposure Index <span class="card-index">EXPOSURE PROFILE</span></h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:8px;">
+              <div>
+                <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:10.5px;">
+                  <span>01. KNOWLEDGE ASSISTANT (Managed SaaS, Read-only)</span><span>15 / 100</span>
+                </div>
+                <div class="bar-track"><div class="bar-fill" style="--target-width:15%;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:10.5px;">
+                  <span>02. WORKFLOW AGENT (Bounded Connectors)</span><span>35 / 100</span>
+                </div>
+                <div class="bar-track"><div class="bar-fill" style="--target-width:35%;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:10.5px;">
+                  <span>03. SPECIALIST BUSINESS AGENT (Systems of Record)</span><span>65 / 100</span>
+                </div>
+                <div class="bar-track"><div class="bar-fill" style="--target-width:65%;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:10.5px;">
+                  <span>04. GOAL-BASED TASK AGENT (Dynamic Sub-goals)</span><span>72 / 100</span>
+                </div>
+                <div class="bar-track"><div class="bar-fill" style="--target-width:72%;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:10.5px;">
+                  <span>05. PERSISTENT PERSONAL AGENT (Cross-session Mailbox)</span><span>85 / 100</span>
+                </div>
+                <div class="bar-track"><div class="bar-fill" style="--target-width:85%;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:10.5px;">
+                  <span>06. CODING / MULTI-AGENT SYSTEM (Shell &amp; Delegated Vaults)</span><span>98 / 100</span>
+                </div>
+                <div class="bar-track"><div class="bar-fill" style="--target-width:98%;"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>RUNTIME ISOLATION // SANDBOXING, MICRO-VMS, AND CREDENTIAL VAULTS</span>
+          <span>07 / 12</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 07: END-TO-END SECURITY ASSURANCE WORKFLOW -->
+      <section class="slide-node" style="left: -1400px; top: 400px;" data-index="7" data-title="07. End-to-End Assurance Workflow" data-x="-1400" data-y="400" data-scale="1" data-rot="0">
+        <div class="scan-bar"></div>
+        <div class="slide-header stagger-item">
+          <div>
+            <div class="slide-meta">07 // OPERATIONAL GOVERNANCE PROCESS</div>
+            <h2 class="slide-title">End-to-End AI Security Assurance Process Workflow</h2>
+          </div>
+          <div class="slide-badge">5-STAGE WORKFLOW</div>
+        </div>
+
+        <div class="slide-body">
+          <div class="grid-3 stagger-item">
+            <div class="mono-card">
+              <h3>Stage 1: Intake &amp; Triage Form <span class="card-index">10 MINS</span></h3>
+              <p>Project team submits an initial consultation request and completes a ten-minute triage questionnaire capturing project scope, autonomy, tools, data sensitivity, and network reach.</p>
+            </div>
+            <div class="mono-card">
+              <h3>Stage 2: Triage &amp; Pattern Match <span class="card-index">PATTERN CHECK</span></h3>
+              <p>Security team evaluates inputs against existing approved patterns (such as a standard Copilot Studio knowledge assistant). Matching deployments follow a streamlined Pattern Assessment.</p>
+            </div>
+            <div class="mono-card">
+              <h3>Stage 3: Risk-Based Routing <span class="card-index">ROUTING</span></h3>
+              <p>Unmatched deployments are scored across the eight triage dimensions into Low (triage sufficient), Medium (Focused AI Security Assurance Process), or High (Full AI Security Assurance Process).</p>
+            </div>
+          </div>
+
+          <div class="mono-card stagger-item">
+            <h3>Assurance Routing Decision Matrix and Post-Implementation Loop <span class="card-index">DECISION FLOW</span></h3>
+            <div class="grid-4" style="margin-top:8px;">
+              <div style="border:1px solid var(--border-mid); padding:10px;">
+                <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-muted);">PATH A // MATCHED PATTERN</div>
+                <h4 style="margin:5px 0; font-size:13px;">Pattern Assessment</h4>
+                <p style="font-size:11px;">Verify conformance to pre-approved architectural baseline controls.</p>
+              </div>
+              <div style="border:1px solid var(--border-mid); padding:10px;">
+                <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-muted);">PATH B // LOW RISK</div>
+                <h4 style="margin:5px 0; font-size:13px;">Direct Release Gate</h4>
+                <p style="font-size:11px;">Initial triage validation suffices; proceeds directly to release approval.</p>
+              </div>
+              <div style="border:1px solid var(--border-mid); padding:10px;">
+                <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">PATH C // MEDIUM RISK</div>
+                <h4 style="margin:5px 0; font-size:13px;">Focused Assurance</h4>
+                <p style="font-size:11px;">Targeted assessment covering only dimensions rated Medium or High.</p>
+              </div>
+              <div style="border:1px solid var(--fg-primary); padding:10px; background:#1d1d1d;">
+                <div style="font-family:var(--font-mono); font-size:10.5px; color:var(--fg-primary);">PATH D // HIGH RISK</div>
+                <h4 style="margin:5px 0; font-size:13px;">Full Assurance Process</h4>
+                <p style="font-size:11px;">Comprehensive 9-domain security assessment plus 6-domain red team testing.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2 stagger-item">
+            <div class="mono-card">
+              <h3>Stage 4: Remediation and CAB Release <span class="card-index">RELEASE GATE</span></h3>
+              <p>Project teams address all findings from the AI Security Assurance Process before entering standard release governance, CAB approval, and production deployment.</p>
+            </div>
+            <div class="mono-card">
+              <h3>Stage 5: Material Change Reassessment <span class="card-index">CONTINUOUS LOOP</span></h3>
+              <p>Production monitoring tracks material changes in tools, models, or permissions, automatically triggering a fresh reassessment request when the security profile shifts.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>ASSURANCE WORKFLOW // TRIAGE, PATTERN MATCHING, RISK ROUTING, AND REASSESSMENT</span>
+          <span>08 / 12</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 08: CORE TRIAGE & RISK EVALUATION DIMENSIONS -->
+      <section class="slide-node" style="left: -3200px; top: 400px;" data-index="8" data-title="08. Eight Core Triage Dimensions" data-x="-3200" data-y="400" data-scale="1" data-rot="-1.1">
+        <div class="scan-bar"></div>
+        <div class="slide-header stagger-item">
+          <div>
+            <div class="slide-meta">08 // TRIAGE SCORING RUBRIC</div>
+            <h2 class="slide-title">Core Triage and Risk Evaluation Dimensions (1 to 8)</h2>
+          </div>
+          <div class="slide-badge">8 EVALUATION DIMENSIONS</div>
+        </div>
+
+        <div class="slide-body">
+          <table class="mono-table stagger-item" style="font-size:11.5px;">
+            <thead>
+              <tr>
+                <th style="width:17%;">Dimension</th>
+                <th style="width:27%;">Low Risk Criteria</th>
+                <th style="width:28%;">Medium Risk Criteria</th>
+                <th style="width:28%;">High Risk Criteria</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1. Autonomy</td>
+                <td>Human approval before consequential actions; draft-only output</td>
+                <td>Bounded independent action within predefined workflows</td>
+                <td>Continuous autonomous action, sub-goal creation, or spawning agents</td>
+              </tr>
+              <tr>
+                <td>2. Code Execution</td>
+                <td>No code generation or execution capability</td>
+                <td>Human-controlled execution inside a tightly constrained runtime</td>
+                <td>Agent-controlled execution with host, network, cloud, or prod access</td>
+              </tr>
+              <tr>
+                <td>3. Tools &amp; Actions</td>
+                <td>Read-only tools with negligible external effect; static toolset</td>
+                <td>Constrained, reversible, approval-gated write actions</td>
+                <td>Privileged, irreversible, or regulated actions; dynamic tool extension</td>
+              </tr>
+              <tr>
+                <td>4. Identity &amp; Access</td>
+                <td>Narrow, short-lived identity strictly on behalf of the user</td>
+                <td>Scoped business domain permissions with attributable token exchange</td>
+                <td>Privileged access, user impersonation, identity creation, or escalation</td>
+              </tr>
+              <tr>
+                <td>5. Asset Criticality</td>
+                <td>Public or low-sensitivity data and low-criticality assets</td>
+                <td>Moderate confidentiality, integrity, availability, or privacy impact</td>
+                <td>Access to highly sensitive data or high-criticality core assets</td>
+              </tr>
+              <tr>
+                <td>6. Network Reach</td>
+                <td>No network access or single fixed default platform endpoint</td>
+                <td>Allow-listed connectivity via gateways, firewalls, Network Security Groups (NSGs)</td>
+                <td>Multiple trust boundaries, unrestricted internet, or cloud control planes</td>
+              </tr>
+              <tr>
+                <td>7. Persistence &amp; Memory</td>
+                <td>Session-only ephemeral state securely deleted after session end</td>
+                <td>Constrained context in approved storage with per-agent isolation</td>
+                <td>Shared long-term memory across users/agents or self-modifying prompts</td>
+              </tr>
+              <tr>
+                <td>8. Monitoring &amp; Containment</td>
+                <td>Standard platform logs with basic user session attribution</td>
+                <td>Centralised event correlation, alerting, and manual kill-switch</td>
+                <td>Immutable retention, real-time anomaly containment, and runtime isolation</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="slide-footer">
+          <span>EIGHT TRIAGE DIMENSIONS // ARCHITECTURAL AND OPERATIONAL RISK SCORING</span>
+          <span>09 / 12</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 09: INTERACTIVE RISK RATING AGGREGATION SIMULATOR -->
+      <section class="slide-node" style="left: -2300px; top: 2000px;" data-index="9" data-title="09. Risk Aggregation & Interactive Simulator" data-x="-2300" data-y="2000" data-scale="1" data-rot="0">
+        <div class="scan-bar"></div>
+        <div class="slide-header stagger-item">
+          <div>
+            <div class="slide-meta">09 // RISK AGGREGATION LOGIC</div>
+            <h2 class="slide-title">Overall Risk Rating Determination &amp; Triage Simulator</h2>
+          </div>
+          <div class="slide-badge" id="sim-verdict-badge">VERDICT: LOW RISK</div>
+        </div>
+
+        <div class="slide-body">
+          <p class="stagger-item">
+            Click any dimension level below to test how the enterprise triage rules aggregate individual dimension scores into an overall risk rating and determine the required AI Security Assurance Process pathway.
+          </p>
+
+          <div class="sim-grid stagger-item" id="simulator-controls"></div>
+
+          <div class="grid-2 stagger-item">
+            <div class="mono-card" id="sim-output-card" style="border-color:var(--fg-primary);">
+              <h3>Calculated Assurance Routing <span class="card-index" id="sim-route-code">ROUTE-LOW</span></h3>
+              <p id="sim-output-desc" style="color:var(--fg-primary); font-size:13px;">
+                All dimensions are rated Low. Initial ten-minute triage verification is sufficient and no additional bespoke assessment is required prior to release governance.
+              </p>
+            </div>
+
+            <div class="mono-card">
+              <h3>Enterprise Aggregation Rules <span class="card-index">ESCALATION LOGIC</span></h3>
+              <p style="font-size:12px;">
+                1. High Overall Rating: Triggered when at least one dimension is rated High, or when three or more Medium dimensions combine to create an equivalent compound exposure.<br>
+                2. Medium Overall Rating: Triggered when one or two dimensions score Medium without any High triggers.<br>
+                3. Low Overall Rating: Requires every dimension to remain Low.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>RISK AGGREGATION // ESCALATION LOGIC AND ASSURANCE ROUTING</span>
+          <span>10 / 12</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 10: FULL AI SECURITY ASSURANCE PROCESS - PART 1: ASSESSMENT -->
+      <section class="slide-node" style="left: -200px; top: 2000px;" data-index="10" data-title="10. AI Security Assurance Process: Assessment" data-x="-200" data-y="2000" data-scale="1" data-rot="1.1">
+        <div class="scan-bar"></div>
+        <div class="slide-header stagger-item">
+          <div>
+            <div class="slide-meta">10 // FULL AI SECURITY ASSURANCE PROCESS (PART 1)</div>
+            <h2 class="slide-title">Comprehensive Security Assessment: Nine Core Domains</h2>
+          </div>
+          <div class="slide-badge">ASSESSMENT PILLAR</div>
+        </div>
+
+        <div class="slide-body">
+          <p class="stagger-item">
+            High-risk initiatives undergo the Full AI Security Assurance Process, beginning with a rigorous nine-domain architectural and operational security assessment.
+          </p>
+
+          <div class="grid-3 stagger-item">
+            <div class="mono-card">
+              <h3>01. Architecture Review <span class="card-index">DOM-01</span></h3>
+              <p>Maps trust boundaries, end-to-end data flows, attached tools, and external platform dependencies.</p>
+            </div>
+            <div class="mono-card">
+              <h3>02. Threat Modelling <span class="card-index">DOM-02</span></h3>
+              <p>Identifies concrete attack paths, business logic abuse cases, and control displacement caused by agent autonomy.</p>
+            </div>
+            <div class="mono-card">
+              <h3>03. Identity &amp; Access <span class="card-index">DOM-03</span></h3>
+              <p>Verifies human user, workload, and agent identities alongside downstream authorisation and token scoping.</p>
+            </div>
+            <div class="mono-card">
+              <h3>04. Data Governance &amp; Privacy <span class="card-index">DOM-04</span></h3>
+              <p>Reviews data classification, input-output minimisation, privacy obligations, retention schedules, and disclosure controls.</p>
+            </div>
+            <div class="mono-card">
+              <h3>05. Supply Chain Risk <span class="card-index">DOM-05</span></h3>
+              <p>Evaluates foundation models, MCP connectors, third-party SaaS solutions, software packages, and hosted services.</p>
+            </div>
+            <div class="mono-card">
+              <h3>06. Human Oversight Controls <span class="card-index">DOM-06</span></h3>
+              <p>Validates approval gates across HITL, Human-on-the-Loop (HOTL), and Human-out-of-the-Loop (HOOTL) models with override switches.</p>
+            </div>
+            <div class="mono-card">
+              <h3>07. Logging &amp; Monitoring <span class="card-index">DOM-07</span></h3>
+              <p>Confirms deterministic attribution of all actions to the specific agent, environment, and owning team with drift alerts.</p>
+            </div>
+            <div class="mono-card">
+              <h3>08. Incident Response <span class="card-index">DOM-08</span></h3>
+              <p>Validates compromise detection playbooks, rapid agent disablement procedures, forensic investigation, and recovery.</p>
+            </div>
+            <div class="mono-card">
+              <h3>09. Operational Resilience <span class="card-index">DOM-09</span></h3>
+              <p>Analyses model and tool failure modes, rollback procedures, recovery objectives, and continuity during dependency loss.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>AI SECURITY ASSURANCE PROCESS // NINE ARCHITECTURAL ASSESSMENT DOMAINS</span>
+          <span>11 / 12</span>
+        </div>
+      </section>
+
+      <!-- SLIDE 11: FULL AI SECURITY ASSURANCE PROCESS - PART 2: SECURITY TESTING -->
+      <section class="slide-node" style="left: 1900px; top: 2000px;" data-index="11" data-title="11. AI Security Assurance Process: Testing" data-x="1900" data-y="2000" data-scale="1" data-rot="-1">
+        <div class="scan-bar"></div>
+        <div class="slide-header stagger-item">
+          <div>
+            <div class="slide-meta">11 // FULL AI SECURITY ASSURANCE PROCESS (PART 2)</div>
+            <h2 class="slide-title">Adversarial Security Testing and Runtime Containment</h2>
+          </div>
+          <div class="slide-badge">RED TEAM TESTING</div>
+        </div>
+
+        <div class="slide-body">
+          <p class="stagger-item">
+            The second pillar of the Full AI Security Assurance Process validates runtime resilience through six adversarial security testing regimes prior to production release.
+          </p>
+
+          <div class="grid-3 stagger-item">
+            <div class="mono-card">
+              <h3>01. Adversarial Red Teaming <span class="card-index">TEST-01</span></h3>
+              <p>Executes multi-step goal subversion exercises to test whether autonomous planning can be redirected toward unauthorised objectives.</p>
+            </div>
+            <div class="mono-card">
+              <h3>02. Prompt Injection <span class="card-index">TEST-02</span></h3>
+              <p>Tests resilience against direct user prompt overrides and indirect injections embedded in retrieved SharePoint files, emails, or web pages.</p>
+            </div>
+            <div class="mono-card">
+              <h3>03. Tool Abuse Testing <span class="card-index">TEST-03</span></h3>
+              <p>Attempts parameter manipulation, unauthorised API invocation, confused deputy privilege escalation, and unsafe tool chaining.</p>
+            </div>
+            <div class="mono-card">
+              <h3>04. Output Validation <span class="card-index">TEST-04</span></h3>
+              <p>Verifies that generated payloads, code snippets, and downstream API arguments are strictly sanitised and schema-validated before execution.</p>
+            </div>
+            <div class="mono-card">
+              <h3>05. Data &amp; Memory Abuse <span class="card-index">TEST-05</span></h3>
+              <p>Tests defences against sensitive training or context exfiltration, cross-session data leakage, and persistent shared memory poisoning.</p>
+            </div>
+            <div class="mono-card">
+              <h3>06. Sandbox Escape &amp; Containment <span class="card-index">TEST-06</span></h3>
+              <p>Probes container, micro-VM, file system, and network egress boundaries to confirm coding and task agents cannot escape runtime isolation.</p>
+            </div>
+          </div>
+
+          <div class="mono-card stagger-item" style="border-color:var(--fg-primary);">
+            <h3>End-to-End Enterprise Assurance Closure <span class="card-index">LIFECYCLE COMPLETE</span></h3>
+            <p>By integrating the four-pillar Target Operating Model, the six-layer Agent Anatomy, the eight Triage Dimensions, and the Full AI Security Assurance Process across code, build, test, release, deploy, operate, and monitor stages, enterprises maintain continuous visibility and deterministic control over autonomous AI systems.</p>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>AI SECURITY ASSURANCE PROCESS // ADVERSARIAL TESTING &amp; RUNTIME CONTAINMENT</span>
+          <span>12 / 12</span>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const slides = Array.from(document.querySelectorAll('.slide-node'));
+  const cameraRig = document.getElementById('camera-rig');
+  const viewport = document.getElementById('viewport');
+  const connectionsSvg = document.getElementById('canvas-connections');
+  const minimapSvg = document.getElementById('minimap-svg');
+  const slideIndicator = document.getElementById('slide-indicator');
+  const slideDrawer = document.getElementById('slide-drawer');
+
+  const hudX = document.getElementById('hud-x');
+  const hudY = document.getElementById('hud-y');
+  const hudZ = document.getElementById('hud-z');
+  const hudVel = document.getElementById('hud-vel');
+  const minimapMode = document.getElementById('minimap-mode');
+
+  let currentIndex = 0;
+  let isOverview = false;
+  let autoPlayTimer = null;
+
+  // Position every slide node at its exact world coordinate (sx, sy)
+  slides.forEach((s) => {
+    const sx = parseFloat(s.dataset.x);
+    const sy = parseFloat(s.dataset.y);
+    s.style.left = `${sx}px`;
+    s.style.top = `${sy}px`;
+  });
+
+  function computeFitScale() {
+    const vw = window.innerWidth || 1440;
+    const vh = window.innerHeight || 900;
+    const scaleX = (vw * 0.86) / 1240;
+    const scaleY = (vh * 0.80) / 760;
+    return Math.min(scaleX, scaleY, 1.08);
+  }
+
+  // Camera starts zoomed out overlooking the full canvas, then zooms smoothly into Title Card (Node 00)
+  const initialFit = computeFitScale();
+  let cam = {
+    x: -1400,
+    y: 200,
+    scale: 0.14,
+    rot: -5
+  };
+
+  let target = {
+    x: -5000,
+    y: -1600,
+    scale: initialFit,
+    rot: 0
+  };
+
+  let velocity = { x: 0, y: 0, scale: 0, rot: 0 };
+
+  function buildConnectionsAndMinimap() {
+    let pathD = '';
+    slides.forEach((s, i) => {
+      const sx = parseFloat(s.dataset.x);
+      const sy = parseFloat(s.dataset.y);
+      pathD += (i === 0 ? `M ${sx} ${sy} ` : `L ${sx} ${sy} `);
+    });
+
+    connectionsSvg.innerHTML = `
+      <path class="connection-line" d="${pathD}" />
+      <path class="connection-pulse" d="${pathD}" />
+    `;
+
+    let miniHtml = `<path d="${pathD}" fill="none" stroke="#555555" stroke-width="65" stroke-dasharray="130 110" />`;
+    slides.forEach((s, i) => {
+      const sx = parseFloat(s.dataset.x);
+      const sy = parseFloat(s.dataset.y);
+      const label = i === 0 ? 'TC' : String(i).padStart(2, '0');
+      miniHtml += `
+        <g class="mini-node" data-idx="${i}" transform="translate(${sx}, ${sy})">
+          <rect x="-540" y="-340" width="1080" height="680" fill="#181818" stroke="#ffffff" stroke-width="50" />
+          <text x="0" y="95" fill="#ffffff" font-family="monospace" font-weight="bold" font-size="290" text-anchor="middle">${label}</text>
+        </g>
+      `;
+    });
+    miniHtml += `<rect id="minimap-viewport-rect" x="-5600" y="-2000" width="1400" height="900" fill="none" stroke="#ffffff" stroke-width="80" />`;
+    minimapSvg.innerHTML = miniHtml;
+
+    minimapSvg.querySelectorAll('.mini-node').forEach(node => {
+      node.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(node.getAttribute('data-idx'), 10);
+        goToSlide(idx);
+      });
+    });
+
+    slideDrawer.innerHTML = slides.map((s, i) => `
+      <button class="drawer-item ${i === 0 ? 'current' : ''}" data-idx="${i}">${s.dataset.title}</button>
+    `).join('');
+
+    slideDrawer.querySelectorAll('.drawer-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-idx'), 10);
+        slideDrawer.classList.remove('open');
+        goToSlide(idx);
+      });
+    });
+  }
+
+  function goToSlide(index) {
+    isOverview = false;
+    document.getElementById('btn-overview').classList.remove('active-mode');
+    minimapMode.textContent = 'LOCKED';
+
+    currentIndex = (index + slides.length) % slides.length;
+    const activeSlide = slides[currentIndex];
+
+    slides.forEach((s, i) => {
+      s.classList.toggle('active', i === currentIndex);
+    });
+
+    slideDrawer.querySelectorAll('.drawer-item').forEach((b, i) => {
+      b.classList.toggle('current', i === currentIndex);
+    });
+
+    const fitScale = computeFitScale();
+    target.x = parseFloat(activeSlide.dataset.x);
+    target.y = parseFloat(activeSlide.dataset.y);
+    target.scale = fitScale * parseFloat(activeSlide.dataset.scale || 1);
+    target.rot = parseFloat(activeSlide.dataset.rot || 0);
+
+    slideIndicator.textContent = `${String(currentIndex + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
+  }
+
+  function zoomIn() {
+    target.scale = Math.min(2.4, target.scale * 1.22);
+    minimapMode.textContent = 'MANUAL ZOOM';
+  }
+
+  function zoomOut() {
+    target.scale = Math.max(0.11, target.scale * 0.82);
+    minimapMode.textContent = 'MANUAL ZOOM';
+  }
+
+  function toggleOverview() {
+    isOverview = !isOverview;
+    const btn = document.getElementById('btn-overview');
+    btn.classList.toggle('active-mode', isOverview);
+
+    if (isOverview) {
+      minimapMode.textContent = 'OVERVIEW';
+      const vw = window.innerWidth || 1440;
+      const vh = window.innerHeight || 900;
+      target.x = -1400;
+      target.y = 200;
+      target.scale = Math.min(vw / 9200, vh / 4800);
+      target.rot = 0;
+      slides.forEach(s => s.classList.add('active'));
+    } else {
+      goToSlide(currentIndex);
+    }
+  }
+
+  // Spring physics camera loop with safe CSS motion blur on slide cards
+  function animateCamera() {
+    const stiffness = 0.075;
+    const damping = 0.76;
+
+    const dx = target.x - cam.x;
+    const dy = target.y - cam.y;
+    const ds = target.scale - cam.scale;
+    const dr = target.rot - cam.rot;
+
+    velocity.x = (velocity.x + dx * stiffness) * damping;
+    velocity.y = (velocity.y + dy * stiffness) * damping;
+    velocity.scale = (velocity.scale + ds * stiffness) * damping;
+    velocity.rot = (velocity.rot + dr * stiffness) * damping;
+
+    cam.x += velocity.x;
+    cam.y += velocity.y;
+    cam.scale += velocity.scale;
+    cam.rot += velocity.rot;
+
+    const speedX = Math.abs(velocity.x) * cam.scale;
+    const speedY = Math.abs(velocity.y) * cam.scale;
+    const zoomSpeed = Math.abs(velocity.scale) * 300;
+    const totalSpeed = Math.hypot(speedX, speedY, zoomSpeed);
+
+    // Subtle cinematic banking tilt proportional to horizontal velocity
+    const dynamicTilt = Math.max(-4.5, Math.min(4.5, velocity.x * 0.014));
+    const finalRot = cam.rot + dynamicTilt;
+
+    cameraRig.style.transform = `scale(${cam.scale.toFixed(5)}) rotate(${finalRot.toFixed(3)}deg) translate3d(${(-cam.x).toFixed(2)}px, ${(-cam.y).toFixed(2)}px, 0)`;
+
+    // Apply safe CSS motion blur strictly during high-speed camera flights
+    const blurPx = totalSpeed > 2.2 ? Math.min(5.5, (totalSpeed - 2.2) * 0.14) : 0;
+    const activeNode = slides[currentIndex];
+    if (activeNode) {
+      activeNode.style.filter = blurPx > 0.2 ? `blur(${blurPx.toFixed(2)}px)` : 'none';
+    }
+
+    hudX.textContent = `X: ${Math.round(cam.x)}`;
+    hudY.textContent = `Y: ${Math.round(cam.y)}`;
+    hudZ.textContent = `SCALE: ${cam.scale.toFixed(2)}x`;
+    hudVel.textContent = `VEL: ${totalSpeed.toFixed(1)}`;
+
+    const miniRect = document.getElementById('minimap-viewport-rect');
+    if (miniRect) {
+      const vwWorld = (window.innerWidth || 1440) / cam.scale;
+      const vhWorld = (window.innerHeight || 900) / cam.scale;
+      miniRect.setAttribute('x', (cam.x - vwWorld / 2).toFixed(0));
+      miniRect.setAttribute('y', (cam.y - vhWorld / 2).toFixed(0));
+      miniRect.setAttribute('width', vwWorld.toFixed(0));
+      miniRect.setAttribute('height', vhWorld.toFixed(0));
+    }
+
+    requestAnimationFrame(animateCamera);
+  }
+
+  // Interactive Risk Simulator
+  const simDimensions = [
+    { name: '1. Autonomy', level: 'L' },
+    { name: '2. Code Execution', level: 'L' },
+    { name: '3. Tools & Actions', level: 'L' },
+    { name: '4. Identity & Access', level: 'L' },
+    { name: '5. Asset Criticality', level: 'L' },
+    { name: '6. Network Reach', level: 'L' },
+    { name: '7. Persistence & Memory', level: 'L' },
+    { name: '8. Monitoring Readiness', level: 'L' }
+  ];
+
+  function renderSimulator() {
+    const container = document.getElementById('simulator-controls');
+    container.innerHTML = simDimensions.map((d, idx) => `
+      <div class="sim-control">
+        <h4>${d.name}</h4>
+        <div class="sim-btn-group">
+          <button class="sim-btn ${d.level === 'L' ? 'selected' : ''}" data-dim="${idx}" data-val="L">LOW</button>
+          <button class="sim-btn ${d.level === 'M' ? 'selected' : ''}" data-dim="${idx}" data-val="M">MED</button>
+          <button class="sim-btn ${d.level === 'H' ? 'selected' : ''}" data-dim="${idx}" data-val="H">HIGH</button>
+        </div>
+      </div>
+    `).join('');
+
+    container.querySelectorAll('.sim-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const dimIdx = parseInt(btn.getAttribute('data-dim'), 10);
+        const val = btn.getAttribute('data-val');
+        simDimensions[dimIdx].level = val;
+        renderSimulator();
+        evaluateSimRisk();
+      });
+    });
+  }
+
+  function evaluateSimRisk() {
+    const highs = simDimensions.filter(d => d.level === 'H').length;
+    const meds = simDimensions.filter(d => d.level === 'M').length;
+
+    const badge = document.getElementById('sim-verdict-badge');
+    const code = document.getElementById('sim-route-code');
+    const desc = document.getElementById('sim-output-desc');
+
+    if (highs >= 1 || meds >= 3) {
+      badge.textContent = 'VERDICT: HIGH RISK';
+      code.textContent = 'FULL ASSURANCE PROCESS';
+      desc.textContent = `Triggered by ${highs} High and ${meds} Medium dimension(s). Mandatory routing to the Full AI Security Assurance Process, comprising the 9-domain Security Assessment and 6-domain Adversarial Security Testing prior to CAB release.`;
+    } else if (meds >= 1) {
+      badge.textContent = 'VERDICT: MEDIUM RISK';
+      code.textContent = 'FOCUSED ASSURANCE PROCESS';
+      desc.textContent = `Triggered by ${meds} Medium dimension(s) with zero High triggers. Routed to a Focused AI Security Assurance Process assessing specifically the elevated dimensions prior to release approval.`;
+    } else {
+      badge.textContent = 'VERDICT: LOW RISK';
+      code.textContent = 'ROUTE-LOW (TRIAGE SUFFICIENT)';
+      desc.textContent = 'All eight dimensions score Low. The initial ten-minute triage verification is sufficient and the agent proceeds directly to standard release governance.';
+    }
+  }
+
+  // Navigation Events
+  document.getElementById('btn-prev').addEventListener('click', () => goToSlide(currentIndex - 1));
+  document.getElementById('btn-next').addEventListener('click', () => goToSlide(currentIndex + 1));
+  document.getElementById('btn-begin-presentation').addEventListener('click', (e) => {
+    e.stopPropagation();
+    goToSlide(1);
+  });
+  document.getElementById('btn-overview').addEventListener('click', toggleOverview);
+  document.getElementById('btn-index').addEventListener('click', () => {
+    slideDrawer.classList.toggle('open');
+  });
+
+  document.getElementById('btn-zoom-in').addEventListener('click', zoomIn);
+  document.getElementById('btn-zoom-out').addEventListener('click', zoomOut);
+
+  const btnAuto = document.getElementById('btn-autoplay');
+  btnAuto.addEventListener('click', () => {
+    if (autoPlayTimer) {
+      clearInterval(autoPlayTimer);
+      autoPlayTimer = null;
+      btnAuto.classList.remove('active-mode');
+      btnAuto.textContent = 'AUTO-TOUR [P]';
+    } else {
+      btnAuto.classList.add('active-mode');
+      btnAuto.textContent = 'STOP TOUR [P]';
+      goToSlide(currentIndex + 1);
+      autoPlayTimer = setInterval(() => {
+        goToSlide(currentIndex + 1);
+      }, 5200);
+    }
+  });
+
+  slides.forEach((s, idx) => {
+    s.addEventListener('click', () => {
+      if (isOverview || currentIndex !== idx) {
+        goToSlide(idx);
+      }
+    });
+  });
+
+  let isDragging = false;
+  let dragStart = { x: 0, y: 0 };
+  let targetStart = { x: 0, y: 0 };
+
+  viewport.addEventListener('mousedown', (e) => {
+    if (e.target.closest('button')) return;
+    isDragging = true;
+    viewport.classList.add('dragging');
+    dragStart.x = e.clientX;
+    dragStart.y = e.clientY;
+    targetStart.x = target.x;
+    targetStart.y = target.y;
+    minimapMode.textContent = 'FREE PAN';
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const dx = (e.clientX - dragStart.x) / cam.scale;
+    const dy = (e.clientY - dragStart.y) / cam.scale;
+    target.x = targetStart.x - dx;
+    target.y = targetStart.y - dy;
+  });
+
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+    viewport.classList.remove('dragging');
+  });
+
+  viewport.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const factor = e.deltaY < 0 ? 1.12 : 0.89;
+    target.scale = Math.max(0.11, Math.min(2.4, target.scale * factor));
+    minimapMode.textContent = 'MANUAL ZOOM';
+  }, { passive: false });
+
+  // Keyboard Shortcuts (including Up/Down arrows for Zoom In and Zoom Out)
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      goToSlide(currentIndex + 1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      goToSlide(currentIndex - 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      zoomIn();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      zoomOut();
+    } else if (e.key === 'o' || e.key === 'O' || e.key === 'm' || e.key === 'M') {
+      toggleOverview();
+    } else if (e.key === 'p' || e.key === 'P') {
+      btnAuto.click();
+    } else if (e.key === 'Home') {
+      goToSlide(0);
+    } else if (e.key === 'End') {
+      goToSlide(slides.length - 1);
+    } else if (e.key >= '1' && e.key <= '9') {
+      goToSlide(parseInt(e.key, 10));
+    } else if (e.key === '0') {
+      goToSlide(0);
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (!isOverview) {
+      target.scale = computeFitScale();
+    }
+  });
+
+  buildConnectionsAndMinimap();
+  renderSimulator();
+  evaluateSimRisk();
+  goToSlide(0);
+  animateCamera();
+
+})();
+</script>
+</body>
+</html>
