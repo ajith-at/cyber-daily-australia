@@ -1,0 +1,51 @@
+Good morning from Melbourne. This is U51, your cyber and AI security brief for Saturday the 14th of November, covering the 24 hours to about seven this morning, Melbourne time.
+
+First, an update on the Microsoft 365 outage that began early on Friday, Melbourne time. Microsoft's status page still lists a service degradation for business and consumer Microsoft 365, with Outlook, Teams, OneDrive and Microsoft 365 on the web among the affected services, while Azure shows no issues. In its latest update, just before six this morning, Microsoft says it is seeing broad recovery, has addressed the underlying issue and is still restoring service to remaining customers and regions. It says the incident was introduced by an issue during an earlier network capacity upgrade that surfaced after a recent network change, and that it was not related to cyber activity or AI. That is Microsoft's account; it has not yet explained the root cause in detail, and it says a full post-incident report will follow.
+
+Here is today's headline rundown. Attackers chained a new Check Point gateway zero-day with older, already patched flaws to plant a backdoor and, in some cases, wipe VMware hosts. US authorities seized infrastructure behind North Korea's deepfake video-call scheme and moved on more than one point two billion dollars from the Binance theft. PostgreSQL shipped fixes for 52 flaws, including one that turns database rights into code execution. And a German drone maker supplying Ukraine confirmed a cyberattack by what it calls hostile actors.
+
+Check Point has confirmed active exploitation of a local privilege escalation flaw in its Gaia operating system, used after the PHP2Shell remote code execution bugs we covered at the start of the month. Attackers got in through gateway web portals still unpatched against those earlier flaws, which had been fixed since the 23rd of October, then abused a Dynamic CLI control socket that accepts commands from any local user and runs them as root. From there they deployed web shells and a persistent backdoor called TSGA. Check Point Research says the activity began on the 30th of October against Israeli organisations, with a broader wave from the 2nd of November across multiple countries and sectors, and it has seen the exploit used against a couple of dozen customers. Some first-wave victims also had wiper malware deployed after the attackers pivoted to VMware ESXi hosts. CISA added the flaw to its Known Exploited Vulnerabilities catalogue on Friday with a deadline of Monday the 16th. The fixed Jumbo Hotfix takes for each release are in the show notes; if patching must wait, Check Point's interim step is to stop the Dynamic CLI service.
+
+Australian focus.
+
+Zenith Payments, which runs the Rental Rewards rent payment platform, says a cybersecurity event caused service interruptions over recent days. It has engaged specialists, says payments continue as usual, and has so far found no access to payment card details or identity documents, while it works out what information may have been accessed. Details are still emerging, and the company says it will notify people directly if personal information is affected.
+
+On the national parks booking breach, Bookeasy now says containment is complete and has been validated by independent experts. It still has not identified any access to credit card details, and it is advising partners to warn customers who booked in the past twelve months about suspicious emails, texts and WhatsApp messages.
+
+Global threats.
+
+The US Justice Department and FBI have disrupted cloud infrastructure behind a North Korean scheme the FBI calls FaceStealer. Attackers send video meeting invitations from accounts stolen from earlier victims, play recorded webcam footage of people the target knows, or deepfakes of well-known industry figures, then fake an audio fault and offer a fix that installs malware. The FBI says the scheme has stolen more than 400 million dollars in eighteen months, and it seized more than 900 webcam videos of victims. The targets are crypto and web3 workers and, increasingly, open-source maintainers, which the department reads as groundwork for software supply chain attacks. Separately, it obtained court authority to seize or restrain more than 1.2 billion dollars stolen in last month's Binance theft, part of about 2.7 billion frozen so far.
+
+German drone maker Quantum Systems, a supplier to Ukraine and the German armed forces, has confirmed that it detected a cyberattack by hostile actors in late October. The company says the threat was contained and its drones remain safe to operate, and German authorities are investigating. The Bundeswehr briefly grounded the company's drones as a precaution, Reuters reports; Quantum Systems says they are flying again.
+
+Telecom security firm Enea has named a spying group, SilentAir, that used hacked equipment inside mobile operators in at least six Asian countries to intercept calls and text messages of selected people, mostly in Taiwan. The group abused the SS7 and Diameter signalling protocols that carriers use for roaming, redirecting targets' traffic, and Enea saw intercepted two-factor authentication codes. Enea rates SilentAir as a state-level actor, but its link to China is low confidence by its own assessment.
+
+Hardware wallet maker Trezor says three of its Safe 5 wallets bought from the reseller CryptoBilis contained an extra circuit board that reads the recovery phrase from the screen and sends it over the mobile network. A firmware update stops the implants found so far, but cannot protect a phrase captured earlier. Trezor's advice to anyone who bought from CryptoBilis since March is to move funds to a new wallet with a new recovery phrase. It has had no reports of lost funds.
+
+CISA also added an UnrealIRCd flaw to its exploited catalogue on Friday, with a Monday deadline. The catalogue entry gives few details, so treat it as a patch-now item for anyone still running that chat server.
+
+AI security.
+
+Security firm Depi has disclosed a chain in OpenAI's Codex repository that started with a crafted GitHub issue. An issue-labelling workflow passed the title and body of any newly opened issue straight into a Codex agent's prompt, and from there the researchers showed they could have published a malicious version of the official Codex package on npm. That is a harness problem rather than a model one: text from strangers reached an agent running inside a pipeline that could get at publishing secrets. Depi says OpenAI deployed a fix straight away and paid an initial bounty, and there is no report of a malicious release reaching users.
+
+Research from Verno Labs suggests prompt injection comes in two internal forms. In tool hijack, injected text changes which tool an agent calls. In argument hijack, it swaps a value such as a bank account in a call the agent was already making. In tests on four open-weight models, combining two matched defences cut the average hijack rate from 84 per cent to under 2. This is a single unreviewed study on small models, so treat it as a lead only; the practical point for defenders is that harness-level controls on untrusted fields still matter.
+
+The FaceStealer case belongs here too. The FBI describes deepfake video of trusted contacts as a core part of the lure, so a familiar face on a call does not prove who is on the other end.
+
+Industry and patches.
+
+The PostgreSQL project has released updates fixing 52 security flaws. Several are rated 8.8 out of 10 and can lead to code execution, including a type confusion bug that lets a database user who can create objects run code on the server as the operating system account running PostgreSQL. Update to 18.7, 17.12 or the fixed release for your branch, listed in the show notes, and rebuild any C-language extensions. No attacks have been reported.
+
+ETH Zurich researchers have published two attacks, Mior and Skyfall, that let a malicious host read data inside AMD SEV-SNP confidential virtual machines. Both need control of the hypervisor, and Mior also needs the BIOS, but Mior can also alter memory and fake the attestation report that proves what a machine is running. AMD has firmware and microcode fixes, with platform firmware reaching server makers in November and December, so cloud and private-cloud operators should watch for BIOS updates.
+
+The eMudhra certificate authority problem has widened. The company has revoked eight more intermediate certificate authorities it had earlier said were unaffected, and Microsoft plans to remove the remaining eMudhra roots from Windows, Edge and Azure on Monday the 16th. Anything that chains to those roots will stop being trusted by default.
+
+Microsoft has also confirmed that this month's Patch Tuesday updates can break Windows activation and product key commands, although devices that are already activated stay activated. Some documents containing images may also fail to print, mainly from Word. Neither is a reason to skip the security fixes, but help desks should expect the tickets.
+
+Police also had a productive week. Operation Endgame partners took down servers behind the Gootloader, CastleRAT and StealC malware, with German police reporting about 6.4 million stolen logins seized. And Europol says Operation TorNado led to 354 arrests of dark web vendors and buyers across 14 countries.
+
+Outlook and patch priorities.
+
+First, Check Point gateways: apply the fixed Jumbo Hotfix before Monday's federal deadline, check logs for rejected Dynamic CLI connections, and if a gateway was exposed and unpatched since late October, look at connected ESXi hosts as well. Second, UnrealIRCd, on the same Monday deadline. Third, PostgreSQL, especially shared or multi-tenant servers where users can create objects. Fourth, test for eMudhra-chained certificates before Monday's root removal. On Microsoft 365, expect mail backlogs to clear unevenly, and treat outage-themed messages asking you to reset passwords or re-enter credentials with suspicion. Finally, anyone who works in crypto or maintains open-source projects should verify unexpected video meeting links through another channel.
+
+That's U51 for this Saturday. Thanks for listening, and enjoy the weekend.
