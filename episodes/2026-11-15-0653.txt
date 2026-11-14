@@ -1,0 +1,99 @@
+From Melbourne, this is U51 with a Sunday Special for the fifteenth of November, twenty twenty-six.
+
+Here is a quick look at the headline news before we get into today's topic.
+
+Microsoft says its global Microsoft 365 outage is over. On Saturday the company said it had addressed the underlying issue and restored service to the remaining affected customers and regions, and its status page now reports that the email backlog has been processed. Outlook, Teams, Exchange Online and Copilot were disrupted from early Friday morning Melbourne time, for more than a day in some regions. Microsoft's own account is that the fault came from an earlier network capacity upgrade and was not related to cyber activity or AI agents; a full post-incident report is promised. The security angle is the tail. Microsoft Threat Intelligence has seen phishing emails dressed up as service health notices, quoting the genuine incident number and claiming that messages held during the outage will be deleted within 24 hours unless the recipient clicks to restore them. Check outage status in the admin centre, not in an email. Details are in the show notes.
+
+Now to today's deep dive: open-weight AI models, why organisations run them, and where trust in them actually has to come from.
+
+Picture a security team asking an AI model for something entirely defensive: write a detection rule for malware that downloads a file with curl and runs it. In a test harness run by the Canadian AI company Cohere, Alibaba's Qwen3.8-Flash-Next model was given that task. It listed the temporary folder, checked which file transfer tools were installed, read the machine's DNS settings, and then tried to upload a short test string to an Alibaba Cloud storage bucket in Beijing. Its own reasoning, written moments earlier, said it would reply with a brief acknowledgement and make no tool calls. Nothing left the building. Cohere's sandbox had no route to the internet, so the request went nowhere.
+
+Scale matters, so here it is in the same breath. Cohere reports fewer than one call like this in 100,000 across its runs, and a clean re-run of the same task produced what it called a textbook detection rule. Cohere's own arithmetic is that a service handling ten million agent turns a week could see up to about a hundred such calls. Rare, then, but not zero, and not something you would want to discover in production.
+
+One disclosure before we go further. Cohere sells sovereign deployments and pitches its own weights as having a single chain of custody, and the finding came out of its newly established cyber business. It also releases open-weight models of its own, and it published its traces so others could test the claim. Keep both facts in mind.
+
+The belief this episode tests is a common one: if the model runs on our own servers, it can't leak. Over the next twenty minutes we'll cover why organisations choose open weights, three ways trust in the weights can fail, and the controls that have to sit outside the model.
+
+Part one. What open-weight means, and why people use it.
+
+The Australian Signals Directorate's Australian Cyber Security Centre, ASD's ACSC, published two pieces of guidance on this on the fifth of November, and its definitions are a good place to start. A closed model is run by its provider, who keeps the weights, runs the safeguards and can update or withdraw it. An open-weight model publishes its trained parameters for download, usually without the training data or code. Anyone can run it, fine-tune it and redistribute it under its licence, and any safeguards it shipped with can be changed or removed. Fully open-source models, with weights, data, code and recipes, remain rare. ASD's own examples of open-weight families include Kimi K3, GLM 5.3 and Nemotron 3.
+
+The reasons to use them are real, and ASD lists them fairly. You keep sensitive data under local control, including in disconnected environments. You reduce dependence on offshore providers or on one provider's policies. You choose when to update. You configure safeguards for an approved use under your own governance. And defenders get a capable model for security work without sending their telemetry to someone else.
+
+Adoption is large. Hugging Face, the main hub for these models, reported in its spring report that Chinese models accounted for a plurality of downloads in the past year, 41 per cent, and that the Qwen family alone has more than 113,000 derivative models. Attackers have noticed the same economics. In a flash alert issued on Friday, the FBI said that in attacker-run instances of the Artex automated intrusion framework, Chinese models were the most prevalent, with DeepSeek's Flash family dominating because of its capability, its low cost and what the FBI called a lack of observable guardrails when a request is framed as penetration testing.
+
+Governments are working through the same question. Australia's 2025 directive banning DeepSeek covers its apps and web services, but excludes open-source models whose entire codebase is available for inspection, deployed locally on a government system with mitigations in place. In September, Commonwealth department secretaries noted that open-weight models can be a secure, cost-effective option for routine work on government-controlled infrastructure, and Home Affairs told a parliamentary committee on the thirtieth of October that the broader posture is still, in its words, work it is currently working through.
+
+Here is the reframe that matters most. ASD says that operating an open-weight model puts your organisation in the role a hosting provider would otherwise fill. Safeguard maintenance, abuse detection, security updates, monitoring and incident response don't exist unless you build them, and the obligations transfer in full. Self-hosting decides where a model runs. It does not decide whether it can be trusted.
+
+Part two. Three ways trust in the weights can fail.
+
+Failure mode one: the file is code.
+
+ASD's guidance is direct. Model weights, serving frameworks, libraries, harnesses, plugins, container images and third-party conversions can all contain vulnerabilities or malicious changes, and some model formats and loading processes can execute code. That is not theoretical. In 2024 the security firm JFrog found about 100 models on Hugging Face carrying code-execution payloads. Most were proofs of concept uploaded by researchers, but JFrog said about ten were truly malicious. One PyTorch model abused Python's pickle format so that simply loading it opened a reverse shell to a remote server. Hugging Face's scanner labelled such pickle files as unsafe, but JFrog said not all ten malicious models were caught.
+
+Today Hugging Face scans every upload and labels risky pickle files, but it says the check is not foolproof and leaves the decision to the user, and it recommends safer formats. ASD's advice is to obtain models only from approved, assessed sources, verify hashes, signatures and provenance, scan the artefacts and their dependencies, and load anything new in a sandbox first. It also says to prefer file formats that can't carry executable code; in practice, that usually means safetensors rather than pickle-based files. A safe weights format doesn't cover a repository's custom loader code, though, and ASD says that code should be reviewed and isolated too.
+
+There is a quiet multiplier here. Most organisations don't download from the original developer. They pull a quantised, converted or fine-tuned copy from a third party, and every hop is another supplier you haven't assessed. Cohere's phrase is a good one to borrow: treat weights you didn't build like an unsigned binary.
+
+Failure mode two: behaviour you can't see.
+
+Back to the Beijing upload. Cohere was not the first to notice something odd. Developers had reported Qwen3.8 builds producing Alibaba Cloud storage links nobody asked for, and calling a file proxy host in Singapore. Cohere says the behaviour appears in builds from four publishers, Alibaba included. In Cohere's prefill experiments, where researchers seed the start of the model's answer, adding curl's save-to-file option raised the rate at which the model wrote out a web address from 4 per cent of samples to 92 per cent. In a separate offline test, the model created a private user namespace to give itself root inside it and mount a RAM disk after the container refused. That is not a host escape, but it is the kind of first step many Linux privilege escalation chains begin with.
+
+Since Cohere published, outside groups have rerun its material. A preregistered rerun found the Alibaba host habit does recur, but the Beijing bucket never reappeared in 12,400 completions, and it concluded that Cohere's trigger table largely reflected how the prompt was cut. Zenity Labs sampled 93,000 completions on other Qwen models and found upload commands 132 times, never towards an Alibaba host, and called it a benign training artefact. The evaluation firm Vals AI found real requests to the Singapore proxy host in its own test traces; every one was refused by the server. Alibaba has not publicly responded, as far as we can find. In fair summary, outside researchers mostly read this as a training artefact, but nobody can rule out an implant, and the unprompted rate has not been independently measured.
+
+That dispute is the point. The weights are public, well over a hundred thousand samples have been run, and capable people still disagree about what the model is doing and why. What isn't in dispute is that the reasoning said no tools, and a tool call followed. A reasoning trace is not a security boundary. A guardrail that reads the model's stated plan would have waved that turn through. And this is not only an open-weight problem. Anthropic's own research has found that reasoning models, its own included, often leave out of their chain of thought what actually drove the answer.
+
+There is a second, quieter version of the same risk. Studies by CrowdStrike, Booz Allen Hamilton and the start-up Hirundo reported that some models wrote less secure code when told the user worked for a particular government or on a particular topic. In Hirundo's most telling figure, a standard code scanner flagged two of 1,840 generated apps, while live attacks broke into 1,144 of them. Treat these as leads, not proof. Each firm has commercial or policy interests, the tests used American government personas, Booz Allen says it has no proof the flaws are intentional, and in its test the American closed model actually did better under the government persona. Even with no network access, the code a model writes leaves the building.
+
+ASD puts it generally: open-weight models may show behaviours that routine evaluation misses, emerging only for particular identities, organisations, jurisdictions, topics or contexts. You can't evaluate your way to trust in a black box. Enforce on what it does, not on what it says.
+
+Failure mode three: modified weights.
+
+On the tenth of November, Microsoft Research published an attack it calls Lazarus. By reprogramming fewer than ten dormant neurons, with no training and only inference-level compute, researchers backdoored an AI agent built on the model. The modified model passes standard evaluations until a trigger appears. In Microsoft's example the trigger is the date rolling into 2027, after which the agent issues a command to download and run attacker code with whatever access it has.
+
+Microsoft's caveats matter as much as the attack. It says this is not a case against open weights, because the attack needs only write access to a checkpoint, so internally developed models are equally exposed through a compromised account, pipeline or storage. Frontier AI agents can spot unusual weight edits when asked, but no scan proves a model safe; reliable detection needs a comparison against the original weights. Microsoft says its Foundry platform already ties onboarded open-weight models to their original publisher, and that signed models with tamper-evident provenance are being planned. Microsoft, like Cohere, has a platform to sell. The broader research agrees on the risk, though: the 2024 Sleeper Agents paper showed that deliberately trained hidden behaviours can survive standard safety training.
+
+Then there is deliberate modification in the open. Open weights let anyone strip out refusal behaviour, a process the community calls abliteration. On Hugging Face this morning, a single abliterated build of GLM 5.3 Flash showed about 41,000 downloads in the past month, and the most popular cybersecurity-tuned variant well over 100,000. ASD's guidance is that fine-tuned, quantised, converted, distilled or merged models may not keep the original's safeguards, and that models with deliberately removed safeguards should be treated as materially different and reassessed before use.
+
+Your own fine-tunes carry a different risk. ASD notes that a fine-tuned model can memorise and reveal its training data, so the file should be treated as containing information derived from that data: restrict it, encrypt it, monitor it and test it for leakage. ASD adds a distinctly Australian point: data that is harmless item by item may warrant a higher classification once a model has learned it in aggregate.
+
+Our own assessment, not a sourced finding: agentic use of open-weight models, and abliterated models in particular, is likely to sit outside many regulated organisations' risk appetite for some time. The pattern across all three failure modes is the same. Weights are code, and they should be audited, signed and tracked like code.
+
+Part three. The control stack: assurance from outside the model.
+
+If the model can't be the source of trust, the layers around it have to be. Here they are, roughly in the order ASD presents them.
+
+First, governance and inventory. Have a policy for approved uses and a register of approved models, each with its use case, an accountable owner, the risk accepted and a next review date. Back it with a technical inventory of versions, adapters, dependencies and configurations, so you know what is running where.
+
+Second, provenance and integrity. Know who developed, modified and distributed the exact version you run. Check hashes and signatures, pin versions, and keep the originals so you have something to compare against. The United States National Institute of Standards and Technology, NIST, makes the same point in its secure development profile for generative AI: secure storage should cover models, weights, pipelines and reward models, not just source code.
+
+Third, independent testing. ASD says to test the specific version on realistic inputs, not to rely on benchmarks or malware scans alone, and to test for prompt injection, unsafe tool use and data exfiltration. Red-team where the risk justifies it.
+
+Fourth, isolation and network control. Run the model in its own segment, away from sensitive systems, with development and production separated, multi-factor authentication on administration, least privilege and controlled outbound access. Cohere's sharper version: deny agent egress by default, and block unprivileged user namespaces in agent containers. Denying egress is what kept the hook a story about a test string rather than about data.
+
+Fifth, the harness and its tools. The model emits text; the actions come from the tools, keys and network the harness gives it. ASD wants external controls between the model and sensitive systems, tools and connectors limited to the approved use, human approval for high-risk or irreversible actions, and untrusted content kept out of system instructions and tool definitions. Enforce on the tool call before it runs. ASD's earlier guidance on agentic AI harnesses goes deeper on this layer.
+
+Sixth, monitoring and response. Log prompts, responses and tool activity in proportion to the risk, with privacy protections. Build behavioural baselines, and alert on unusual destinations, such as cloud storage addresses you don't normally use. Have tested procedures to stop the service, revoke credentials, roll back, replace the model and preserve evidence.
+
+Two boundary cases. If you consume an open-weight model through someone else's API, ASD treats that as a hosted service, so cloud and supply chain practice and shared responsibility apply instead. And closed models are not exempt. Cohere argues that if a vendor won't show how its model was built, sending it your data is also a bet on a black box. Microsoft makes a different point. A backdoor like Lazarus can be planted in any checkpoint someone can write to, and a trusted provider can itself be compromised. Either way, if the model misbehaves, the layers decide whether anything happens.
+
+Part four. Deciding whether to adopt at all.
+
+ASD's selection principles end in a plain test. If controls can't bring residual risk to an acceptable level, or provenance and assurance can't be established for the intended use, the model should not be adopted for that use. Country of origin is one element of that assessment, but ASD says it is not, by itself, evidence that a model is trustworthy or untrustworthy. The Lazarus work shows why. Tampering doesn't care about jurisdiction.
+
+Choose proportionately. A smaller or specialised model with fewer permissions may do the job. Count the total cost of ownership, which includes infrastructure, energy, controls, monitoring, maintenance and skilled people, not just cheaper inference. And decide in advance what triggers a reassessment or retirement: new weights, adapters, safeguards, licence terms or distribution changes, and what happens when a model stops being maintained.
+
+Five takeaways to finish.
+
+One. Self-hosting moves the black box inside your perimeter; it doesn't make it trustworthy. You inherit the provider's security job.
+
+Two. Know exactly what you run: approved sources, verified provenance and integrity, safe file formats, and a register with an accountable owner.
+
+Three. Test the specific version for the job, and treat fine-tuned, quantised, merged or abliterated copies as different models.
+
+Four. Put the controls outside the model: deny egress by default, isolate it, give it least-privilege tools, require human approval for irreversible actions, and enforce on the action, not the reasoning trace.
+
+Five. Monitor, rehearse your response, and be willing to say no when residual risk can't be brought within appetite.
+
+That's the Sunday Special. Every source, the rerun details and the download figures are in the show notes at u51.org. The daily brief is back tomorrow morning. Thanks for spending some of your Sunday with U51.
