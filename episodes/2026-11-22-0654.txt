@@ -1,0 +1,85 @@
+Good morning from Melbourne. This is U51 with a Sunday Special for the twenty-second of November, twenty twenty-six.
+
+First, a quick look at one story making news before we get into today's topic.
+
+Microsoft has confirmed that attackers exploited a flaw in Entra Connect Health, the cloud service organisations use to monitor their on-premises identity infrastructure. According to the notification sent to affected administrators, the flaw was introduced in July, found on the ninth of November and fixed on Microsoft's side on the nineteenth. It allowed read-only access to tenant metadata: administrator and technical contact email addresses, tenant names and domains, licence tiers and directory synchronisation status. Microsoft says no passwords, tokens or valid keys were exposed, and no customer patch is needed. It hasn't said how many organisations were affected or who was behind it, so details are still emerging. The practical risk is targeted phishing aimed at your administrators. Warn them, make sure privileged accounts use phishing-resistant multi-factor authentication, and check Azure Service Health in the portal itself, not through a link in an email, to see whether your tenant was notified.
+
+Now to today's Special: AI agents hacking at machine speed.
+
+On the tenth of September, Amazon's threat intelligence team came across a server that should never have been on the open internet. It was not a victim's server. It belonged to the attacker. It was running Cairn, an open-source framework that coordinates several AI agents to carry out penetration testing, and it had no authentication at all. Anyone who found it could read the operator's project settings, the prompts, and everything the agents had produced.
+
+What it showed was a campaign that had started two days earlier, on the eighth of September, and ran for about 48 hours against universities in East Asia outside mainland China. The operator had supplied a list of target addresses and a goal, typed in plain language: obtain shell access. From there, according to Amazon, the framework planned, executed and adjusted its approach without the operator choosing each step.
+
+Cairn was not built for crime. It was built as a research and problem-solving engine for defenders: give it a starting point and a plain-language goal, and it coordinates multiple AI agents to work towards it. That is exactly what made it useful to this operator.
+
+So this morning's question is a simple one. What changes for defenders when an attacker's tempo is measured in minutes and hours, rather than days and weeks? The short answer, which the rest of this episode will earn, is that the techniques are old. The operating tempo is new.
+
+Anatomy of a machine-speed intrusion.
+
+First, a word on who is doing what, because the language around these stories tends to get carried away. A language model on its own produces text. The actions come from the harness around it: the tools, the shell access, the network connections and the credentials the operator gives it, plus the goal the operator sets. Amazon describes the agents as finding a zero-day "on their own", and the precise meaning is that the harness chose the next step without a human approving each one. A human still picked the targets, wrote the goal and, as Palo Alto Networks' Unit 42 researchers note about Cairn, can inject hints at any time.
+
+The operator left fingerprints. The prompts were in Simplified Chinese and the timestamps were set to China Standard Time. Amazon attributes the activity to a China-nexus actor with moderate confidence, citing the language, the time zone and the fact that the targets are likely of strategic interest to China. It has not tied the activity to a named group or to a government.
+
+Amazon detailed three operations from that console, and the first two are failures, which is worth keeping in mind.
+
+Failure one was an open Redis database server. Over roughly 16 hours the harness ran about 148 sequential actions against it: abusing database replication, trying to break out of the scripting sandbox, firing the old Log4Shell exploit at a service running alongside it, and spraying credentials. None of it worked. A human tester would have gone home hours earlier. The harness simply kept going.
+
+Failure two was a university server with graphics processors for research computing. Here the harness did its homework. It built a list of about 80 real usernames from faculty directories, lab websites and academic papers, then tried more than 30,000 credential combinations over more than six hours, across remote login, an admin dashboard, storage, the virtual private network and a web portal. It never got a working login. That is a small, quiet win for whoever set the passwords on that network.
+
+The third operation succeeded. The target was MONAI Label, an open-source tool research teams use to label medical scans and train imaging models. The harness mapped the application's interface and found that an upload feature accepted a file identifier from the caller without checking where the file would land. That is a path traversal flaw, one of the oldest bug classes on the web. In about 11 minutes the harness went from mapping the interface to writing files wherever the server process could write. In a later session it used the same flaw to plant a file that Python loads at startup, triggered the tool's training feature to start a new Python process, and got a reverse shell running as root.
+
+Amazon assesses with high confidence that this was a zero-day, because there was no fix, issue, advisory or prior mention of it in vulnerability databases or the project's records. The operator then handed the agents a tunnel into a second university network that was running the same software. Amazon infers that the second server was compromised the same way, but it has not confirmed that.
+
+A note for anyone running MONAI Label. The maintainers merged a source code fix in October, and the flaw now has a CVE, rated critical at 9.8 out of 10. But as of this morning the project's advisory still lists no patched release; the newest version on offer is the one that is affected. A fix in source is not a package you can install. So the advice is: restrict exposure and watch the advisory. Take it off untrusted networks, turn on authentication, which is off by default, and run it as an unprivileged account that can only write to its own data folder. The affected versions and advisory details are in the show notes.
+
+Put those three operations together and the shift is clear. This was not genius. It was persistence without fatigue: sixteen hours on one database with no coffee breaks, six hours of password guessing built from public research, and eleven minutes from first look to file write when something was left open and unauthenticated.
+
+An ecosystem, not one actor.
+
+If this were one operator with one clever setup, it would be a curiosity. It is not. Several independent sources described the same pattern within a single month.
+
+Palo Alto Networks' Unit 42 published its own Cairn research on the twelfth of November. It tracked a customised fork of the framework, wired to Zhipu and DeepSeek models, used from August to September in 25 operations against at least 19 organisations. Sessions ran from 20 minutes to more than 50 hours. The operator achieved access or retrieved data at 10 of those organisations, including more than a million records at one. Unit 42 judges this to be most likely a single operator or a small team, again China-nexus with moderate confidence. Neither Unit 42 nor Amazon links their actor to the other's, so treat them as separate cases.
+
+On the sixteenth of November, Google's Threat Intelligence Group and Mandiant said agentic threat activity had crossed a significant threshold. Their report names several frameworks being used by attackers, including ARTEX, Cairn, CyberStrikeAI and PentAGI. One detail stands out: on an exposed staging server they found an exploit agent doing continuous patch diffing, comparing new software releases with old ones to work out what a fix repairs, and therefore what an unpatched system still exposes. Their example of that involved PHP.
+
+The same report puts a timeline on how quickly this now moves. PaperCut's print management flaws were first exploited as zero-days in late August, before anyone had disclosed them. After PaperCut's flaws were disclosed, AI-assisted exploits appeared within a day and a mass campaign within four. The security firm GreyNoise observed that campaign. Google also reports hundreds of fake proofs of concept, likely generated by language models, so not every exploit that appears overnight actually works, which is its own headache for defenders sorting signal from noise.
+
+Then there is ARTEX, an open-source multi-agent penetration testing framework written in the Go language and released in July. Its original repository was taken down in October, but forks and a so-called pro version carry on. On the thirteenth of November, the Federal Bureau of Investigation issued a FLASH alert citing a researchers' count of more than 1,600 publicly exposed ARTEX consoles, with some intrusions moving from initial targeting to privileged access in under three hours. The FBI also notes the low barrier to entry: these tools need minimal technical expertise to run.
+
+Amazon has its own view of ARTEX. Between early October and early November, its MadPot decoy systems captured the agents' working memory as they attacked. Amazon attributes the activity, with moderate confidence, to several separate China-nexus groups, and its conclusion is blunt: the agents succeeded where basic security hygiene was missing. Default or hard-coded credentials, keys left in code, unauthenticated interfaces and AI inference endpoints, and unpatched software. Amazon's verdict: getting those fundamentals right remains the most effective defence.
+
+Machine speed is also arriving through ordinary gaps. Barracuda published an account of an intrusion into its own environment that started with a key it had given to an AI vendor and never retired. From the first call with that key, the intruder reached about ten cloud accounts in roughly 44 hours, and Barracuda says the indicators match ARTEX.
+
+Some of the evidence is more circumstantial, and it is worth saying so. Rapid7 described an intrusion where the attacker's commands carried sequential task numbers, a structure it says suggests AI-assisted automated tooling. The attacker reached a database just over three minutes after first running code, and a cloud data warehouse at about four hours. That is an inference from the shape of the commands, not a confirmed tool. Similarly, the Russian security firm F6 said scripts used against Cisco Expressway devices were possibly developed with AI assistance, based on the comments left in them. Neither is proof, but both fit the pattern.
+
+And the mirror image matters. The research firm Calif used an AI coding agent to find the Java4Shell flaw in about an hour, then took two more hours to build a first working exploit, all for less than 200 United States dollars in AI usage. Calif calls it centaur work: part human, part AI, with the human steering. Defenders have the same tools. The question is who uses them with more discipline.
+
+So the takeaway from this section: this is a capability class, not a single group. Several vendors and a law enforcement agency, working separately, describe the same thing.
+
+Reality check.
+
+Now some cold water, because hype is not a defence strategy either.
+
+Failure is common. Two of the three operations Amazon detailed went nowhere. Unit 42's operator got results at 10 of 19 organisations, so at nine there was no reported access. Ordinary controls, such as not exposing services that don't need to be exposed and not leaving default logins, are exactly what these agents grind against.
+
+Humans are still in the loop. They choose the targets and goals, supply hints and provide infrastructure, like that tunnel into the second university. "Autonomous" in these reports means the harness picks the next step, not that the software decided to attack anyone.
+
+These frameworks are noisy. Google's researchers put it neatly: they trade stealth for velocity. Sixteen hours of scripted actions against one database, or tens of thousands of login attempts, is not subtle. And two of the strongest cases this month came to light because the operators exposed their own consoles and staging servers. Attackers, it turns out, also forget to turn on authentication.
+
+So what does "machine speed" actually mean? Minutes for a single exploitation step: eleven, in Amazon's case. Hours to meaningful access: under three, in the FBI's alert. Days from disclosure to mass exploitation: AI-assisted exploits within a day of PaperCut's disclosure, and a mass campaign within four. Now set that against a monthly patch cycle, or a security team that only looks at alerts in business hours. The gap is days to weeks. You will not out-click an agent. You shrink what it can reach, and you automate the first response.
+
+What defenders and leaders should do.
+
+Five takeaways.
+
+One. Take management and research tools off the internet. Consoles, dashboards, hypervisors, backup platforms and tools like MONAI Label should never be reachable without authentication, and most should not be reachable from the internet at all. Both the FBI's ARTEX alert and Amazon's findings point here first.
+
+Two. Treat a patch release as the start of a race measured in days. Patch internet-facing systems first, use automatic updates where it makes sense, and hold your suppliers to the same pace. In Australia, the Australian Signals Directorate's Australian Cyber Security Centre made the same point in a critical alert on the seventeenth of November, titled "Vulnerabilities are moving quickly, so patch, protect, prevent". It reported some flaws being exploited within 48 hours of patches or mitigation advice, said publicly reported software vulnerabilities rose 30 per cent last financial year, according to its annual threat report, and cited automated and AI-enabled tools as part of the reason attackers are moving faster.
+
+Three. Remove the easy wins that agents grind through. Default and hard-coded credentials, unauthenticated databases and AI inference endpoints, keys that were never retired, and accounts without multi-factor authentication. An agent with infinite patience is very good at finding the one door you forgot.
+
+Four. Automate the first response. On high-confidence detections, let your tooling isolate a host or revoke a token straight away, and have humans supervise the outcomes rather than approve every step. Amazon makes the same recommendation.
+
+Five. Hunt for the noise. Long runs of scripted commands, bursts of credential guessing, interface mapping followed immediately by file uploads, and the published indicators for these frameworks. Tune detections for volume and pace, not only for known signatures. Google, the FBI and Rapid7 have all published material to help, Mandiant has a hardening guide, and the links are in the show notes.
+
+That's the Sunday Special. The sources, the MONAI Label advisory details and the indicator links are all in the show notes at u51.org. The daily brief returns tomorrow morning. Thanks for spending part of your Sunday with U51.
